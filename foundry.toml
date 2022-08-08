@@ -1,0 +1,15 @@
+[profile.default]
+# forge config
+verbosity = 3
+# Solidity config.
+solc-version = "0.8.15"
+optimizer = true
+optimizer-runs = 10_000_000
+bytecode_hash = "none"
+remappings = [
+  "test/=test/", # Allows imports using e.g. `test/` to refer to root `test` directory.
+  "script/=script/",
+]
+
+[profile.ci]
+fuzz-runs = 5000
