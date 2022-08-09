@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: Unlicensed
+pragma solidity 0.8.15;
+
+import "forge-std/Test.sol";
+
+import "src/interfaces/IConfig.sol";
+import "src/interfaces/IManager.sol";
+import "src/interfaces/ITrigger.sol";
+
+contract TriggerTestSetup is Test, IConfig, ICState {
+  using stdStorage for StdStorage;
+
+  bytes32 constant salt = bytes32(uint256(1234)); // Arbitrary default salt value.
+
+  address localOwner;
+  address localPauser;
+
+  IManager manager;
+  ISet set;
+  ISet set2;
+  ICostModel costModel;
+  IERC20 asset;
+  SetConfig setConfig;
+
+  function setUp() public virtual {
+    // Create addresses.
+    asset = IERC20(makeAddr("asset"));
+    costModel = ICostModel(makeAddr("costModel"));
+    localOwner = makeAddr("localOwner");
+    localPauser = makeAddr("localPauser");
+    manager = IManager(makeAddr("manager"));
+    set = ISet(makeAddr("set"));
+    set2 = ISet(makeAddr("set2"));
+
+    // Mock responses.
+    // By default, all sets exist.
+    vm.mockCall(
+      address(manager),
+      abi.encodeWithSelector(IManager.sets.selector),
+      abi.encode(true, true, 0, 0) // Set exists and is approved for backstop, config update time and deadline are zero.
+    );
+  }
+
+  // Helper methods.
+  function updateTriggerState(ITrigger _trigger, ICState.CState _val) public {
+    stdstore.target(address(_trigger)).sig("state()").checked_write(uint256(_val));
+    assertEq(_trigger.state(), _val);
+  }
+
+  function assertEq(ICState.CState a, ICState.CState b) internal {
+    if (a != b) {
+      emit log("Error: a == b not satisfied [ICState.CState]");
+      emit log_named_uint("  Expected", uint256(b));
+      emit log_named_uint("    Actual", uint256(a));
+      fail();
+    }
+  }
+}
