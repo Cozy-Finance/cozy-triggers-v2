@@ -41,6 +41,8 @@ contract UMATriggerFactory {
     uint256 proposalDisputeWindow
   );
 
+  error TriggerAddressMismatch();
+
   constructor(IManager _manager, FinderInterface _oracleFinder) {
     manager = _manager;
     oracleFinder = _oracleFinder;
@@ -79,7 +81,7 @@ contract UMATriggerFactory {
     );
 
     uint256 _triggerCount = triggerCount[_configId]++;
-    bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
+    bytes32 _salt = _getSalt(_triggerCount, _rewardAmount);
 
     address _triggerAddress = computeTriggerAddress(
       _query,
@@ -101,7 +103,7 @@ contract UMATriggerFactory {
       _proposalDisputeWindow
     );
 
-    if (address(_trigger) != _triggerAddress) revert("Trigger address mismatch");
+    if (address(_trigger) != _triggerAddress) revert TriggerAddressMismatch();
 
     emit TriggerDeployed(
       address(_trigger),
@@ -143,10 +145,7 @@ contract UMATriggerFactory {
       )
     );
 
-    // We use the reward amount in the salt so that triggers that are the same
-    // except for their reward amount will still be deployed to different
-    // addresses and can be differentiated.
-    bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
+    bytes32 _salt = _getSalt(_triggerCount, _rewardAmount);
     bytes32 _data = keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), _salt, _bytecodeHash));
     _address = address(uint160(uint256(_data)));
   }
@@ -211,5 +210,15 @@ contract UMATriggerFactory {
       _proposalDisputeWindow
     );
     return keccak256(_triggerConstructorArgs);
+  }
+
+  function _getSalt(
+    uint256 _triggerCount,
+    uint256 _rewardAmount
+  ) private view returns(bytes32) {
+    // We use the reward amount in the salt so that triggers that are the same
+    // except for their reward amount will still be deployed to different
+    // addresses and can be differentiated.
+    return keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
   }
 }
