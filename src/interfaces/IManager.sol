@@ -23,6 +23,6 @@ interface IManager is ICState {
     uint64 configUpdateDeadline;
   }
 
-  function sets(ISet set) external returns (SetData memory);
+  function sets(ISet) view external returns (bool exists, bool approved, uint64 configUpdateTime, uint64 configUpdateDeadline);
   function updateMarketState(ISet set, CState newMarketState) external;
 }
