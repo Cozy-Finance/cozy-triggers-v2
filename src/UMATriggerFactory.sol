@@ -142,6 +142,10 @@ contract UMATriggerFactory {
         _triggerConstructorArgs
       )
     );
+
+    // We use the reward amount in the salt so that triggers that are the same
+    // except for their reward amount will still be deployed to different
+    // addresses and can be differentiated.
     bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
     bytes32 _data = keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), _salt, _bytecodeHash));
     _address = address(uint160(uint256(_data)));
