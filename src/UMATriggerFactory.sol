@@ -2,17 +2,20 @@
 pragma solidity 0.8.15;
 
 import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
+import "src/lib/SafeTransferLib.sol";
 import "src/UMATrigger.sol";
 
 /**
  * @notice This is a utility contract to make it easy to deploy UMATriggers for
  * the Cozy protocol.
- * @dev Be sure to computeTriggerAddress and approve the computed address to
- * spend the rewardAmount before calling deployTrigger, otherwise the latter will
- * revert. Funds need to be available to the created trigger within its
- * constructor so that it can submit its query to the UMA oracle.
+ * @dev Be sure to approve the trigger to spend the rewardAmount before calling
+ * `deployTrigger`, otherwise the latter will revert. Funds need to be available
+ * to the created trigger within its constructor so that it can submit its query
+ * to the UMA oracle.
  */
 contract UMATriggerFactory {
+  using SafeTransferLib for IERC20;
+
   /// @notice The manager of the Cozy protocol.
   IManager public immutable manager;
 
@@ -48,7 +51,6 @@ contract UMATriggerFactory {
   /// Oracle for evaluation.
   /// @param _rewardToken The token used to pay the reward to users that propose
   /// answers to the query.
-  /// @param _rewardFunder The address that will be supplying funds for the reward.
   /// @param _rewardAmount The amount of rewardToken that will be paid to users
   /// who propose an answer to the query.
   /// @param _bondAmount The amount of `rewardToken` that must be staked by a
@@ -64,7 +66,6 @@ contract UMATriggerFactory {
   function deployTrigger(
     string memory _query,
     IERC20 _rewardToken,
-    address _rewardFunder,
     uint256 _rewardAmount,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
@@ -78,18 +79,29 @@ contract UMATriggerFactory {
     );
 
     uint256 _triggerCount = triggerCount[_configId]++;
-    bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid));
+    bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
+
+    address _triggerAddress = computeTriggerAddress(
+      _query,
+      _rewardToken,
+      _rewardAmount,
+      _bondAmount,
+      _proposalDisputeWindow,
+      _triggerCount
+    );
+
+    _rewardToken.safeTransferFrom(msg.sender, _triggerAddress, _rewardAmount);
 
     _trigger = new UMATrigger{salt: _salt}(
       manager,
       oracleFinder,
       _query,
       _rewardToken,
-      _rewardFunder,
-      _rewardAmount,
       _bondAmount,
       _proposalDisputeWindow
     );
+
+    if (address(_trigger) != _triggerAddress) revert("Trigger address mismatch");
 
     emit TriggerDeployed(
       address(_trigger),
@@ -109,7 +121,6 @@ contract UMATriggerFactory {
   function computeTriggerAddress(
     string memory _query,
     IERC20 _rewardToken,
-    address _rewardFunder,
     uint256 _rewardAmount,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
@@ -120,8 +131,6 @@ contract UMATriggerFactory {
       oracleFinder,
       _query,
       _rewardToken,
-      _rewardFunder,
-      _rewardAmount,
       _bondAmount,
       _proposalDisputeWindow
     );
@@ -133,7 +142,7 @@ contract UMATriggerFactory {
         _triggerConstructorArgs
       )
     );
-    bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid));
+    bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
     bytes32 _data = keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), _salt, _bytecodeHash));
     _address = address(uint160(uint256(_data)));
   }
@@ -144,7 +153,6 @@ contract UMATriggerFactory {
   function findAvailableTrigger(
     string memory _query,
     IERC20 _rewardToken,
-    address _rewardFunder,
     uint256 _rewardAmount,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
@@ -163,7 +171,6 @@ contract UMATriggerFactory {
       address _computedAddr = computeTriggerAddress(
         _query,
         _rewardToken,
-        _rewardFunder,
         _rewardAmount,
         _bondAmount,
         _proposalDisputeWindow,
