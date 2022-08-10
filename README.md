@@ -1,2 +1,3 @@
-# cozy-v2-triggers
-Triggers and trigger templates for Cozy V2
+# Cozy V2 Triggers
+
+Trigger contracts for Cozy V2.
