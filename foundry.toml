@@ -9,6 +9,7 @@ bytecode_hash = "none"
 remappings = [
   "test/=test/", # Allows imports using e.g. `test/` to refer to root `test` directory.
   "script/=script/",
+  "@openzeppelin/=lib/openzeppelin-contracts" # Needed for UMA protocol imports.
 ]
 
 [profile.ci]

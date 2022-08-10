@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "src/interfaces/ICostModel.sol";
 import "src/interfaces/IDecayModel.sol";
 import "src/interfaces/IDripModel.sol";
-import "src/interfaces/IERC20.sol";
 
 /**
  * @dev Structs used to define parameters in sets and markets.

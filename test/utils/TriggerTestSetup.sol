@@ -3,6 +3,7 @@ pragma solidity 0.8.15;
 
 import "forge-std/Test.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import "src/interfaces/IConfig.sol";
 import "src/interfaces/IManager.sol";
