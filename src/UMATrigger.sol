@@ -105,8 +105,6 @@ contract UMATrigger is BaseTrigger {
     FinderInterface _oracleFinder,
     string memory _query,
     IERC20 _rewardToken,
-    address _rewardFunder,
-    uint256 _rewardAmount,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
   ) BaseTrigger(_manager) {
@@ -116,7 +114,6 @@ contract UMATrigger is BaseTrigger {
     bondAmount = _bondAmount;
     proposalDisputeWindow = _proposalDisputeWindow;
 
-    rewardToken.transferFrom(_rewardFunder, address(this), _rewardAmount);
     _submitRequestToOracle();
   }
 

@@ -37,7 +37,6 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     address _computedTriggerAddress = factory.computeTriggerAddress(
       "Has Terra been hacked?",
       rewardToken,
-      address(this),
       _rewardAmount,
       _bondAmount,
       _proposalDisputeWindow,
@@ -45,7 +44,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     );
 
     deal(address(rewardToken), address(this), _rewardAmount);
-    rewardToken.approve(_computedTriggerAddress, _rewardAmount);
+    rewardToken.approve(address(factory), _rewardAmount);
 
     vm.expectEmit(true, true, true, true);
     emit TriggerDeployed(
@@ -68,7 +67,6 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     UMATrigger _trigger = factory.deployTrigger(
       "Has Terra been hacked?",
       rewardToken,
-      address(this),
       uint256(_rewardAmount),
       _bondAmount,
       _proposalDisputeWindow
@@ -99,23 +97,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
   ) internal {
     vm.selectFork(forkId);
 
-    address _computedTriggerAddress = factory.computeTriggerAddress(
-      "Has Terra been hacked?",
-      rewardToken,
-      address(this),
-      _rewardAmount,
-      _bondAmount,
-      _proposalDisputeWindow,
-      0 // This is the first trigger of its kind being created.
-    );
-
     deal(address(rewardToken), address(this), _rewardAmount);
-    rewardToken.approve(_computedTriggerAddress, _rewardAmount);
+    rewardToken.approve(address(factory), _rewardAmount);
 
     UMATrigger _trigger = factory.deployTrigger(
       "Has Terra been hacked?",
       rewardToken,
-      address(this),
       uint256(_rewardAmount),
       _bondAmount,
       _proposalDisputeWindow
@@ -264,30 +251,19 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
   ) internal {
     vm.selectFork(forkId);
 
-    address _computedTriggerAddress = factory.computeTriggerAddress(
-      "Has Mt Gox been hacked?",
-      rewardToken,
-      address(this),
-      _rewardAmount,
-      _bondAmount,
-      _proposalDisputeWindow,
-      0 // This is the first trigger of its kind being created.
-    );
-
     deal(address(rewardToken), address(this), _rewardAmount);
-    assertEq(rewardToken.allowance(address(this), _computedTriggerAddress), 0);
-    rewardToken.approve(_computedTriggerAddress, _rewardAmount);
+    assertEq(rewardToken.allowance(address(this), address(factory)), 0);
+    rewardToken.approve(address(factory), _rewardAmount);
 
     UMATrigger _trigger = factory.deployTrigger(
       "Has Mt Gox been hacked?",
       rewardToken,
-      address(this),
       uint256(_rewardAmount),
       _bondAmount,
       _proposalDisputeWindow
     );
     // Ensure that the entire allowance has been spent.
-    assertEq(rewardToken.allowance(address(this), _computedTriggerAddress), 0);
+    assertEq(rewardToken.allowance(address(this), address(factory)), 0);
 
     uint256 _queryTimestamp = block.timestamp;
     OptimisticOracleV2Interface.Request memory _umaRequest;
