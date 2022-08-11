@@ -219,6 +219,6 @@ contract UMATriggerFactory {
     // We use the reward amount in the salt so that triggers that are the same
     // except for their reward amount will still be deployed to different
     // addresses and can be differentiated.
-    return keccak256(abi.encode(_triggerCount, block.chainid, _rewardAmount));
+    return keccak256(abi.encode(block.chainid, _triggerCount, _rewardAmount));
   }
 }
