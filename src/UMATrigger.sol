@@ -179,17 +179,32 @@ contract UMATrigger is BaseTrigger {
     bytes32 _identifier,
     uint256 _timestamp,
     bytes memory _ancillaryData
-  ) external view {
+  ) external {
     OptimisticOracleV2Interface _oracle = getOracle();
-    // There is no need to authorize this function since all it even potentially
-    // does is revert. But in the event that this logic is expanded and/or this
-    // callback is made to do more the authorization should be added.
-   OptimisticOracleV2Interface.Request memory _umaRequest;
-   _umaRequest = _oracle.getRequest(address(this), _identifier, _timestamp, _ancillaryData);
+    // Besides confirming that the caller is the UMA oracle, we also confirm
+    // that the args passed in match the args used to submit our latest query to
+    // UMA. This is done as an extra safeguard that we are responding to an
+    // event related to the specific query we care about. It is possible, for
+    // example, for multiple queries to be submitted to the oracle that differ
+    // only with respect to timestamp. So we want to make sure we know which
+    // query the oracle has settled on an answer to.
+    if (
+      msg.sender != address(_oracle) ||
+      _timestamp != requestTimestamp ||
+      keccak256(_ancillaryData) != keccak256(bytes(query)) ||
+      _identifier != queryIdentifier
+    ) revert Unauthorized();
 
-   // Revert if the answer to the question was "NO". We don't want to be told
-   // that a hack/exploit has *not* happened yet.
-   if (_umaRequest.proposedPrice == NEGATIVE_ANSWER) revert InvalidProposal();
+    OptimisticOracleV2Interface.Request memory _umaRequest;
+    _umaRequest = _oracle.getRequest(address(this), _identifier, _timestamp, _ancillaryData);
+
+    // Revert if the answer was anything other than "YES". We don't want to be told
+    // that a hack/exploit has *not* happened yet, or it cannot be determined, etc.
+    if (_umaRequest.proposedPrice != AFFIRMATIVE_ANSWER) revert InvalidProposal();
+
+    // Freeze the market and set so that funds cannot be withdrawn, since
+    // there's now a real possibility that we are going to trigger.
+    _updateTriggerState(CState.FROZEN);
   }
 
   /// @notice UMA callback for settlement. This code is run when the protocol
@@ -208,13 +223,7 @@ contract UMATrigger is BaseTrigger {
   ) external {
     OptimisticOracleV2Interface _oracle = getOracle();
 
-    // Besides confirming that the caller is the UMA oracle, we also confirm
-    // that the args passed in match the args used to submit our latest query to
-    // UMA. This is done as an extra safeguard that we are responding to an
-    // event related to the specific query we care about. It is possible, for
-    // example, for multiple queries to be submitted to the oracle that differ
-    // only with respect to timestamp. So we want to make sure we know which
-    // query the oracle has settled on an answer to.
+    // See `priceProposed` for why we authorize callers in this way.
     if (
       msg.sender != address(_oracle) ||
       _timestamp != requestTimestamp ||
@@ -226,9 +235,10 @@ contract UMATrigger is BaseTrigger {
       shouldTrigger = true;
     } else {
       // If the answer was not affirmative, i.e. "Yes, the protocol was hacked",
-      // the trigger should not change state. But we still need to resubmit our
+      // the trigger should return to the ACTIVE state. And we need to resubmit our
       // query so that we are informed if the event we care about happens in the
       // future.
+      _updateTriggerState(CState.ACTIVE);
       _submitRequestToOracle(_oracle);
     }
   }
@@ -236,11 +246,11 @@ contract UMATrigger is BaseTrigger {
   /// @notice Toggles the trigger if the UMA oracle has confirmed a positive
   /// answer to the query.
   function runProgrammaticCheck() external returns (CState) {
-    // Rather than revert if not active, we simply return the state and exit.
+    // Rather than revert when triggered, we simply return the state and exit.
     // Both behaviors are acceptable, but returning is friendlier to the caller
     // as they don't need to handle a revert and can simply parse the
     // transaction's logs to know if the call resulted in a state change.
-    if (state != CState.ACTIVE) return state;
+    if (state == CState.TRIGGERED) return state;
     if (shouldTrigger) {
       // Give the reward balance to the caller to make up for gas costs and
       // incentivize keeping markets in line with trigger state.
