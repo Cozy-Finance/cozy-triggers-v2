@@ -98,7 +98,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   /// @param _trackingOracle The address of the desired trackingOracle for the trigger.
   /// @param _priceTolerance The priceTolerance that the deployed trigger will
   /// have. See ChainlinkTrigger.priceTolerance() for more information.
-  /// @param _frequencyTolerance the frequency tolerance that the deployed trigger will
+  /// @param _frequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
   function deployTrigger(
     int256 _price,
@@ -120,9 +120,9 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   /// @param _trackingOracle The address of the desired trackingOracle for the trigger.
   /// @param _priceTolerance The priceTolerance that the deployed trigger would
   /// have. See ChainlinkTrigger.priceTolerance() for more information.
-  /// @param _truthFrequencyTolerance the frequency tolerance that the deployed trigger would
+  /// @param _truthFrequencyTolerance The frequency tolerance that the deployed trigger would
   /// have for the truth oracle. See ChainlinkTrigger.truthFrequencyTolerance() for more information.
-  /// @param _trackingFrequencyTolerance the frequency tolerance that the deployed trigger would
+  /// @param _trackingFrequencyTolerance The frequency tolerance that the deployed trigger would
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
   /// @param _triggerCount The zero-indexed ordinal of the trigger with respect to its
   /// configuration, e.g. if this were to be the fifth trigger deployed with
@@ -165,9 +165,9 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   /// @param _trackingOracle The address of the desired trackingOracle for the trigger.
   /// @param _priceTolerance The priceTolerance that the deployed trigger will
   /// have. See ChainlinkTrigger.priceTolerance() for more information.
-  /// @param _truthFrequencyTolerance the frequency tolerance that the deployed trigger will
+  /// @param _truthFrequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the truth oracle. See ChainlinkTrigger.truthFrequencyTolerance() for more information.
-  /// @param _trackingFrequencyTolerance the frequency tolerance that the deployed trigger will
+  /// @param _trackingFrequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
   function findAvailableTrigger(
     AggregatorV3Interface _truthOracle,
@@ -213,9 +213,9 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   /// @param _trackingOracle The address of the desired trackingOracle for the trigger.
   /// @param _priceTolerance The priceTolerance that the deployed trigger will
   /// have. See ChainlinkTrigger.priceTolerance() for more information.
-  /// @param _truthFrequencyTolerance the frequency tolerance that the deployed trigger will
+  /// @param _truthFrequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the truth oracle. See ChainlinkTrigger.truthFrequencyTolerance() for more information.
-  /// @param _trackingFrequencyTolerance the frequency tolerance that the deployed trigger will
+  /// @param _trackingFrequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
   function triggerConfigId(
     AggregatorV3Interface _truthOracle,
