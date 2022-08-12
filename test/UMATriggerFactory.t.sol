@@ -90,6 +90,36 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     );
   }
 
+  function _settleQueryViaDVM(
+    int256 _answer,
+    address _requester,
+    uint256 _queryTimestamp,
+    bytes memory _query
+  ) public {
+    // Warp forward in time so that if a new query is issued as a result of
+    // settlement it will not have the same block.timestamp as the origainl,
+    // which will cause the request to fail.
+    vm.warp(block.timestamp + 42);
+
+    vm.mockCall(
+      address(_getDVM()),
+      abi.encodeWithSelector(OracleAncillaryInterface.hasPrice.selector),
+      abi.encode(true)
+    );
+    vm.mockCall(
+      address(_getDVM()),
+      abi.encodeWithSelector(OracleAncillaryInterface.getPrice.selector),
+      abi.encode(_answer)
+    );
+    umaOracle.settle(
+      _requester,
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      _query
+    );
+    vm.clearMockedCalls();
+  }
+
   function testFork_DeployTriggerCreatesAUMARequest(
     uint96 _rewardAmount,
     uint96 _bondAmount,
@@ -135,7 +165,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     deal(address(rewardToken), address(this), _bondAmount + _umaRequest.finalFee);
     rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
 
-    // Attempt to propose a negative answer, it should not succeed b/c the
+    // Attempt to propose a non-YES answer, it should not succeed b/c the
     // trigger reverts in a callback.
     vm.expectRevert(UMATrigger.InvalidProposal.selector);
     umaOracle.proposePrice(
@@ -145,6 +175,24 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes("Has Terra been hacked?"),
       0 // A negative answer.
     );
+    vm.expectRevert(UMATrigger.InvalidProposal.selector);
+    umaOracle.proposePrice(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes("Has Terra been hacked?"),
+      0.5e18 // A "cannot be determined" answer.
+    );
+    vm.expectRevert("Cannot propose 'too early'");
+    umaOracle.proposePrice(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes("Has Terra been hacked?"),
+      type(int256).min // A "too soon" answer.
+    );
+
+    // Confirm that no price succeeded in being proposed.
     _umaRequest = umaOracle.getRequest(
       address(_trigger),
       bytes32("YES_OR_NO_QUERY"),
@@ -179,23 +227,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     vm.stopPrank();
 
     // Settle and have the DVM side with the disputer: there was no hack.
-    vm.mockCall(
-      address(_getDVM()),
-      abi.encodeWithSelector(OracleAncillaryInterface.hasPrice.selector),
-      abi.encode(true)
-    );
-    vm.mockCall(
-      address(_getDVM()),
-      abi.encodeWithSelector(OracleAncillaryInterface.getPrice.selector),
-      abi.encode(0) // The DVM returns a settled price of 0 == "NO".
-    );
-    umaOracle.settle(
+    _settleQueryViaDVM(
+      0, // A "NO" answer.
       address(_trigger),
-      bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?")
     );
-    vm.clearMockedCalls();
 
     // A new request should have been issued with the existing reward.
     // There is a new timestamp because there is a new query.
@@ -301,23 +338,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
 
     // Settle and have the DVM side with the proposer: there was indeed a hack.
     assertEq(_trigger.shouldTrigger(), false);
-    vm.mockCall(
-      address(_getDVM()),
-      abi.encodeWithSelector(OracleAncillaryInterface.hasPrice.selector),
-      abi.encode(true)
-    );
-    vm.mockCall(
-      address(_getDVM()),
-      abi.encodeWithSelector(OracleAncillaryInterface.getPrice.selector),
-      abi.encode(1) // The DVM returns a settled price of 1 == "YES".
-    );
-    umaOracle.settle(
+    _settleQueryViaDVM(
+      1, // The DVM returns a settled price of 1 == "YES".
       address(_trigger),
-      bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?")
     );
-    vm.clearMockedCalls();
     assertEq(_trigger.shouldTrigger(), true);
 
     // Run the trigger programmatic check.
@@ -327,6 +353,82 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     assertEq(_trigger.runProgrammaticCheck(), CState.TRIGGERED);
     assertEq(_trigger.state(), CState.TRIGGERED);
     assertEq(rewardToken.balanceOf(address(0xC0FFEE)), _rewardAmount);
+  }
+
+  function testFork_TriggerFreezesMarketsWhenAnswersAreProposed(
+    uint96 _rewardAmount,
+    uint96 _bondAmount,
+    uint32 _proposalDisputeWindow
+  ) internal {
+    vm.selectFork(forkId);
+
+    deal(address(rewardToken), address(this), _rewardAmount);
+    rewardToken.approve(address(factory), _rewardAmount);
+
+    UMATrigger _trigger = factory.deployTrigger(
+      "Has USDT been hacked?",
+      rewardToken,
+      uint256(_rewardAmount),
+      _bondAmount,
+      _proposalDisputeWindow
+    );
+    uint256 _queryTimestamp = block.timestamp;
+
+    // A random user cannot just call the priceProposed callback and freeze the market.
+    vm.expectRevert(BaseTrigger.Unauthorized.selector);
+    _trigger.priceProposed(
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes("Has USDT been hacked?")
+    );
+    assertEq(_trigger.state(), CState.ACTIVE);
+
+    OptimisticOracleV2Interface.Request memory _umaRequest;
+    _umaRequest = umaOracle.getRequest(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes("Has USDT been hacked?")
+    );
+
+    // Have someone propose a positive answer.
+    deal(address(rewardToken), address(0xBEEF), _bondAmount + _umaRequest.finalFee);
+    vm.startPrank(address(0xBEEF));
+    rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
+    umaOracle.proposePrice(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes("Has USDT been hacked?"),
+      1 // A positive answer.
+    );
+    vm.stopPrank();
+
+    // The market should now be frozen so no one can withdraw funds.
+    assertEq(_trigger.state(), CState.FROZEN);
+
+    // Have someone else dispute the answer.
+    deal(address(rewardToken), address(42), _bondAmount + _umaRequest.finalFee);
+    vm.startPrank(address(42));
+    rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
+    umaOracle.disputePrice(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes("Has USDT been hacked?")
+    );
+    vm.stopPrank();
+
+    // Settle and have the DVM side with the disputer: there was no hack.
+    _settleQueryViaDVM(
+      0, // A "NO" answer.
+      address(_trigger),
+      _queryTimestamp,
+      bytes("Has USDT been hacked?")
+    );
+
+    // The market should now be back to active so that funds can be withdrawn.
+    assertEq(_trigger.state(), CState.ACTIVE);
   }
 }
 
@@ -355,6 +457,9 @@ contract DeployTriggerMainnetTest is DeployTriggerSharedTest {
   function testFork1_DeployTriggerRefundsTriggerCaller() public {
     testFork_DeployTriggerRefundsWhoeverCallsRunProgrammaticTrigger(42, 2000, 24 hours);
   }
+  function testFork1_TriggerFreezesMarketsWhenAnswersAreProposed() public {
+    testFork_TriggerFreezesMarketsWhenAnswersAreProposed(42, 2000, 12 hours);
+  }
 }
 contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
   function setUp() public override {
@@ -381,5 +486,8 @@ contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
   }
   function testFork10_DeployTriggerRefundsTriggerCaller() public {
     testFork_DeployTriggerRefundsWhoeverCallsRunProgrammaticTrigger(42, 2000, 24 hours);
+  }
+  function testFork10_TriggerFreezesMarketsWhenAnswersAreProposed() public {
+    testFork_TriggerFreezesMarketsWhenAnswersAreProposed(42, 2000, 12 hours);
   }
 }
