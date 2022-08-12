@@ -97,7 +97,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     bytes memory _query
   ) public {
     // Warp forward in time so that if a new query is issued as a result of
-    // settlement it will not have the same block.timestamp as the origainl,
+    // settlement it will not have the same block.timestamp as the original,
     // which will cause the request to fail.
     vm.warp(block.timestamp + 42);
 
