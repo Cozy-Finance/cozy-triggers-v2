@@ -109,9 +109,9 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   ) public returns (ChainlinkTrigger _trigger) {
     AggregatorV3Interface _truthOracle = deployFixedPriceAggregator(_price, _decimals);
 
-    // For the truth FixedPriceAggregator peg oracle, we use a frequency tolerance of 1 since it should always return
+    // For the truth FixedPriceAggregator peg oracle, we use a frequency tolerance of 0 since it should always return
     // block.timestamp as the updatedAt timestamp.
-    return deployTrigger(_truthOracle, _trackingOracle, _priceTolerance, 1, _frequencyTolerance);
+    return deployTrigger(_truthOracle, _trackingOracle, _priceTolerance, 0, _frequencyTolerance);
   }
 
   /// @notice Call this function to determine the address at which a trigger

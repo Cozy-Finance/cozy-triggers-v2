@@ -146,7 +146,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
       _truthOracle = address(_pegOracle);
 
       // For peg triggers, we set the frequency tolerance to 0 for the truth FixedPriceAggregator peg oracle.
-      assertEq(_trigger.truthFrequencyTolerance(), 1);
+      assertEq(_trigger.truthFrequencyTolerance(), 0);
     }
 
     assertEq(_trigger.state(), CState.ACTIVE);
@@ -525,7 +525,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_trigger.trackingOracle(), AggregatorV3Interface(usdcUsdOracleMainnet));
     assertEq(_trigger.priceTolerance(), 0.001e4);
     // For peg triggers, we set the frequency tolerance to 0 for the truth FixedPriceAggregator peg oracle.
-    assertEq(_trigger.truthFrequencyTolerance(), 1);
+    assertEq(_trigger.truthFrequencyTolerance(), 0);
     assertEq(_trigger.trackingFrequencyTolerance(), 60);
 
     (,int256 _priceInt,, uint256 _updatedAt,) = _trigger.truthOracle().latestRoundData();
