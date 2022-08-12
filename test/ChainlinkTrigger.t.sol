@@ -25,8 +25,9 @@ contract MockChainlinkTrigger is ChainlinkTrigger {
     AggregatorV3Interface _truthOracle,
     AggregatorV3Interface _targetOracle,
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
-  ) ChainlinkTrigger(_manager, _truthOracle, _targetOracle, _priceTolerance, _frequencyTolerance) {}
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
+  ) ChainlinkTrigger(_manager, _truthOracle, _targetOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance) {}
 
   function TEST_HOOK_programmaticCheck() public view returns (bool) { return programmaticCheck(); }
 
@@ -36,7 +37,8 @@ contract MockChainlinkTrigger is ChainlinkTrigger {
 abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
   uint256 constant basePrice = 1945400000000; // The answer for BTC/USD at block 15135183.
   uint256 priceTolerance = 0.15e4; // 15%.
-  uint256 frequencyTolerance = 60;
+  uint256 truthFrequencyTolerance = 60;
+  uint256 trackingFrequencyTolerance = 80;
 
   MockChainlinkTrigger trigger;
   MockChainlinkOracle truthOracle;
@@ -55,7 +57,8 @@ abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
       truthOracle,
       targetOracle,
       priceTolerance,
-      frequencyTolerance
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
     );
 
     vm.prank(address(_manager));
@@ -77,7 +80,8 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
       truthOracle,
       targetOracle,
       priceTolerance,
-      frequencyTolerance
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
     );
 
     // The trigger constructor should have executed runProgrammaticCheck() which should have transitioned
@@ -170,12 +174,12 @@ contract ProgrammaticCheckTest is ChainlinkTriggerUnitTest {
 
     _truthOracleUpdatedAt = bound(
       _truthOracleUpdatedAt,
-      block.timestamp - frequencyTolerance,
+      block.timestamp - truthFrequencyTolerance,
       block.timestamp + 1 days
     );
     _targetOracleUpdatedAt = bound(
       _targetOracleUpdatedAt,
-      block.timestamp - frequencyTolerance,
+      block.timestamp - trackingFrequencyTolerance,
       block.timestamp + 1 days
     );
 
@@ -202,11 +206,12 @@ contract ProgrammaticCheckTest is ChainlinkTriggerUnitTest {
 
     vm.warp(_currentTimestamp);
     if (
-      _truthOracleUpdatedAt + frequencyTolerance < block.timestamp ||
-        _targetOracleUpdatedAt + frequencyTolerance < block.timestamp
+      _truthOracleUpdatedAt + truthFrequencyTolerance < block.timestamp ||
+        _targetOracleUpdatedAt + trackingFrequencyTolerance < block.timestamp
     ) {
       vm.expectRevert(ChainlinkTrigger.StaleOraclePrice.selector);
     }
+
     trigger.TEST_HOOK_programmaticCheck();
   }
 
@@ -277,6 +282,7 @@ abstract contract PegProtectionTriggerUnitTest is TriggerTestSetup {
       truthOracle,
       trackingOracle,
       0.05e4, // 5% price tolerance.
+      1,
       frequencyTolerance
     );
     vm.prank(address(_manager));

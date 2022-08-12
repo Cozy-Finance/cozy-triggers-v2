@@ -30,8 +30,11 @@ contract ChainlinkTrigger is BaseTrigger {
   /// as having been exceeded, no matter what price the trackingOracle returns.
   uint256 public immutable priceTolerance;
 
-  /// @notice The maximum amount of time we allow to elapse before an oracle's price is deemed stale.
-  uint256 public immutable frequencyTolerance;
+  /// @notice The maximum amount of time we allow to elapse before the truth oracle's price is deemed stale.
+  uint256 public immutable truthFrequencyTolerance;
+
+  /// @notice The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
+  uint256 public immutable trackingFrequencyTolerance;
 
   /// @dev Thrown when the `oracle`s price is negative.
   error InvalidPrice();
@@ -46,18 +49,21 @@ contract ChainlinkTrigger is BaseTrigger {
   /// @param _truthOracle The canonical oracle, assumed to be correct.
   /// @param _trackingOracle The oracle we expect to diverge.
   /// @param _priceTolerance The maximum percent delta between oracle prices that is allowed, as a wad.
-  /// @param _frequencyTolerance The maximum amount of time we allow to elapse before an oracle's price is deemed stale.
+  /// @param _truthFrequencyTolerance The maximum amount of time we allow to elapse before the truth oracle's price is deemed stale.
+  /// @param _trackingFrequencyTolerance The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
   constructor(
     IManager _manager,
     AggregatorV3Interface _truthOracle,
     AggregatorV3Interface _trackingOracle,
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) BaseTrigger(_manager) {
     truthOracle = _truthOracle;
     trackingOracle = _trackingOracle;
     priceTolerance = _priceTolerance;
-    frequencyTolerance = _frequencyTolerance;
+    truthFrequencyTolerance = _truthFrequencyTolerance;
+    trackingFrequencyTolerance = _trackingFrequencyTolerance;
     runProgrammaticCheck();
   }
 
@@ -76,8 +82,8 @@ contract ChainlinkTrigger is BaseTrigger {
 
   /// @dev Executes logic to programmatically determine if the trigger should be toggled.
   function programmaticCheck() internal view returns (bool) {
-    uint256 _truePrice = _oraclePrice(truthOracle);
-    uint256 _trackingPrice = _oraclePrice(trackingOracle);
+    uint256 _truePrice = _oraclePrice(truthOracle, truthFrequencyTolerance);
+    uint256 _trackingPrice = _oraclePrice(trackingOracle, trackingFrequencyTolerance);
 
     uint256 _priceDelta = _truePrice > _trackingPrice ? _truePrice - _trackingPrice : _trackingPrice - _truePrice;
 
@@ -89,10 +95,10 @@ contract ChainlinkTrigger is BaseTrigger {
   }
 
   /// @dev Returns the current price of the specified `_oracle`.
-  function _oraclePrice(AggregatorV3Interface _oracle) internal view returns (uint256 _price) {
+  function _oraclePrice(AggregatorV3Interface _oracle, uint256 _frequencyTolerance) internal view returns (uint256 _price) {
     (,int256 _priceInt,, uint256 _updatedAt,) = _oracle.latestRoundData();
     if (_updatedAt > block.timestamp) revert InvalidTimestamp();
-    if (block.timestamp - _updatedAt > frequencyTolerance) revert StaleOraclePrice();
+    if (block.timestamp - _updatedAt > _frequencyTolerance) revert StaleOraclePrice();
     if (_priceInt < 0) revert InvalidPrice();
     _price = uint256(_priceInt);
   }

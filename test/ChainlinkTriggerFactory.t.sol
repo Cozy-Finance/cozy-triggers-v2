@@ -93,7 +93,8 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
       AggregatorV3Interface(_truthOracle),
       AggregatorV3Interface(_trackingOracle),
       0.1e4, // priceTolerance.
-      45 // frequencyTolerance.
+      45, // truthFrequencyTolerance.
+      45 // trackingFrequencyTolerance
     );
   }
 
@@ -114,8 +115,9 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
     // This value is fairly arbitrary. We set it to 24 hours, which should be longer than the
     // "heartbeat" for all feeds used in this test. New price data is written when the off-chain
     // price moves more than the feed's deviation threshold, or if the heartbeat duration elapses
-    // without other updates.
-    uint256 _frequencyTolerance = 24 hours;
+    // without other updates. We set the tracking oracle to 1 hour longer to ensure they don't match for testing.
+    uint256 _truthFrequencyTolerance = 24 hours;
+    uint256 _trackingFrequencyTolerance = 25 hours;
 
     ChainlinkTrigger _trigger;
     if (_pegPrice == 0 && _pegDecimals == 0) {
@@ -124,8 +126,10 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         AggregatorV3Interface(_truthOracle),
         AggregatorV3Interface(_trackingOracle),
         _priceTolerance,
-        _frequencyTolerance
+        _truthFrequencyTolerance,
+        _trackingFrequencyTolerance
       );
+      assertEq(_trigger.truthFrequencyTolerance(), _truthFrequencyTolerance);
     } else {
       // We are deploying a peg trigger.
       _trigger = factory.deployTrigger(
@@ -133,13 +137,16 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         _pegDecimals,
         AggregatorV3Interface(_trackingOracle),
         _priceTolerance,
-        _frequencyTolerance
+        _trackingFrequencyTolerance
       );
       AggregatorV3Interface _pegOracle = _trigger.truthOracle();
       (,int256 _priceInt,,,) = _pegOracle.latestRoundData();
       assertEq(_priceInt, _pegPrice);
       assertEq(_pegOracle.decimals(), _pegDecimals);
       _truthOracle = address(_pegOracle);
+
+      // For peg triggers, we set the frequency tolerance to 0 for the truth FixedPriceAggregator peg oracle.
+      assertEq(_trigger.truthFrequencyTolerance(), 0);
     }
 
     assertEq(_trigger.state(), CState.ACTIVE);
@@ -148,7 +155,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
     assertEq(_trigger.truthOracle(), AggregatorV3Interface(_truthOracle));
     assertEq(_trigger.trackingOracle(), AggregatorV3Interface(_trackingOracle));
     assertEq(_trigger.priceTolerance(), _priceTolerance);
-    assertEq(_trigger.frequencyTolerance(), _frequencyTolerance);
+    assertEq(_trigger.trackingFrequencyTolerance(), _trackingFrequencyTolerance);
 
     // Mock the tracking oracle's price to 0.
     vm.mockCall(
@@ -191,13 +198,15 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
 contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
   function testFuzz_DeployTriggerDeploysAChainlinkTriggerWithDesiredSpecs(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) public {
     ChainlinkTrigger _trigger = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(_trigger.getSets().length, 0);
@@ -205,25 +214,29 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_trigger.truthOracle(), AggregatorV3Interface(ethUsdOracleMainnet));
     assertEq(_trigger.trackingOracle(), AggregatorV3Interface(stEthUsdOracleMainnet));
     assertEq(_trigger.priceTolerance(), _priceTolerance);
-    assertEq(_trigger.frequencyTolerance(), _frequencyTolerance);
+    assertEq(_trigger.truthFrequencyTolerance(), _truthFrequencyTolerance);
+    assertEq(_trigger.trackingFrequencyTolerance(), _trackingFrequencyTolerance);
   }
 
   function testFuzz_DeployTriggerEmitsAnEvent(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) public {
     address _triggerAddr = factory.computeTriggerAddress(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance,
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance,
       0 // This is the first trigger of its kind.
     );
     bytes32 _triggerConfigId = factory.triggerConfigId(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     vm.expectEmit(true, true, true, true);
@@ -233,26 +246,30 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       stEthUsdOracleMainnet,
       ethUsdOracleMainnet,
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     factory.deployTrigger(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
   }
 
   function testFuzz_DeployTriggerDeploysANewTriggerEachTime(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) public {
     bytes32 _triggerConfigId = factory.triggerConfigId(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(factory.triggerCount(_triggerConfigId), 0);
@@ -261,7 +278,8 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(factory.triggerCount(_triggerConfigId), 1);
@@ -270,7 +288,8 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(factory.triggerCount(_triggerConfigId), 2);
@@ -284,13 +303,15 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     vm.assume(_chainId != block.chainid);
 
     uint256 _priceTolerance = 0.42e4;
-    uint256 _frequencyTolerance = 42;
+    uint256 _truthFrequencyTolerance = 42;
+    uint256 _trackingFrequencyTolerance = 43;
 
     ChainlinkTrigger _triggerA = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     vm.chainId(_chainId);
@@ -299,7 +320,8 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertNotEq(address(_triggerA), address(_triggerB));
@@ -309,13 +331,15 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
 contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
   function testFuzz_ComputeTriggerAddressMatchesDeployedAddress(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) public {
     address _expectedAddress = factory.computeTriggerAddress(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance,
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance,
       0 // This is the first trigger of its kind.
     );
 
@@ -323,7 +347,8 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(_expectedAddress, address(_trigger));
@@ -339,6 +364,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(stEthUsdOracleMainnet),
       0.2e4, // priceTolerance.
       360, // frequencyTolerance.
+      390,
       42 // This is the 42nd trigger of its kind.
     );
 
@@ -349,6 +375,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(stEthUsdOracleMainnet),
       0.2e4, // priceTolerance.
       360, // frequencyTolerance.
+      390,
       42 // This is the 42nd trigger of its kind.
     );
 
@@ -359,32 +386,37 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
 contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
   function testFuzz_TriggerConfigIdIsDeterministic(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) public {
     bytes32 _configIdA = factory.triggerConfigId(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
     bytes32 _configIdB = factory.triggerConfigId(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
     assertEq(_configIdA, _configIdB);
   }
 
   function testFuzz_TriggerConfigIdCanBeUsedToGetTheTriggerCount(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance
   ) public {
     bytes32 _triggerConfigId = factory.triggerConfigId(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(factory.triggerCount(_triggerConfigId), 0);
@@ -393,7 +425,8 @@ contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(factory.triggerCount(_triggerConfigId), 1);
@@ -404,14 +437,16 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
   function test_FindAvailableTriggerWhenNoneExist() public {
     testFuzz_FindAvailableTriggerWhenMultipleExistAndAreAvailable(
       0.5e4, // priceTolerance.
-      24 * 60 * 60, // frequencyTolerance.
+      24 * 60 * 60, // truthFrequencyTolerance.
+      25 * 60 * 60, // trackingFrequencyTolerance.
       0 // Do not deploy any triggers.
     );
   }
 
   function testFuzz_FindAvailableTriggerWhenMultipleExistAndAreAvailable(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance,
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance,
     uint8 _triggersToDeploy
   ) public {
     // This test is really slow (10+ seconds) without reasonable bounds.
@@ -423,7 +458,8 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         AggregatorV3Interface(ethUsdOracleMainnet),
         AggregatorV3Interface(stEthUsdOracleMainnet),
         _priceTolerance,
-        _frequencyTolerance
+        _truthFrequencyTolerance,
+        _trackingFrequencyTolerance
       );
       if (i == 0) _initTrigger = _trigger;
     }
@@ -432,7 +468,8 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     // The first available trigger should be returned.
@@ -441,7 +478,8 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
 
   function testFuzz_FindAvailableTriggerWhenMultipleExistButAreUnavailable(
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance,
+    uint256 _truthFrequencyTolerance,
+    uint256 _trackingFrequencyTolerance,
     uint8 _triggersToDeploy
   ) public {
     // This test is really slow (10+ seconds) without reasonable bounds.
@@ -453,7 +491,8 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         AggregatorV3Interface(stEthUsdOracleMainnet),
         AggregatorV3Interface(ethUsdOracleMainnet),
         _priceTolerance,
-        _frequencyTolerance
+        _truthFrequencyTolerance,
+        _trackingFrequencyTolerance
       );
       _addMaxSetsToTrigger(_trigger);
     }
@@ -462,7 +501,8 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
-      _frequencyTolerance
+      _truthFrequencyTolerance,
+      _trackingFrequencyTolerance
     );
 
     assertEq(_expectedTrigger, address(0));
@@ -484,7 +524,9 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_trigger.manager(), factory.manager());
     assertEq(_trigger.trackingOracle(), AggregatorV3Interface(usdcUsdOracleMainnet));
     assertEq(_trigger.priceTolerance(), 0.001e4);
-    assertEq(_trigger.frequencyTolerance(), 60);
+    // For peg triggers, we set the frequency tolerance to 0 for the truth FixedPriceAggregator peg oracle.
+    assertEq(_trigger.truthFrequencyTolerance(), 0);
+    assertEq(_trigger.trackingFrequencyTolerance(), 60);
 
     (,int256 _priceInt,, uint256 _updatedAt,) = _trigger.truthOracle().latestRoundData();
     assertEq(_priceInt, 1e8);
