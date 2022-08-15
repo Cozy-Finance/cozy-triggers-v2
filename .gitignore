@@ -1,5 +1,3 @@
-# Remove broadcast once we start committing real deploy files
-broadcast/*
 cache/
 out/
 .env
