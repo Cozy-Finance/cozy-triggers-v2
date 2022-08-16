@@ -12,7 +12,7 @@ contract DeployTriggerFactories is Script {
 
   // -------- Cozy Contracts --------
 
-  IManager manager = IManager(address(0));
+  IManager manager = IManager(0x1f513585D8bB1F994b37F2aaAB3F8499E52ca534);
 
   // -------- UMA Trigger Factory --------
 

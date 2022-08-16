@@ -10,12 +10,12 @@ contract DeployChainlinkPegTrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(address(0x1eB3f4a379e7BfAf57331FC9BCb5b4763122E48B));
+  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0x1eB3f4a379e7BfAf57331FC9BCb5b4763122E48B);
 
   int256 pegPrice = 1e8;
   uint8 decimals = 8;
 
-  AggregatorV3Interface trackingOracle = AggregatorV3Interface(address(0x82f6491eF3bb1467C1cb283cDC7Df18B2B9b968E));
+  AggregatorV3Interface trackingOracle = AggregatorV3Interface(0x82f6491eF3bb1467C1cb283cDC7Df18B2B9b968E);
 
   uint256 priceTolerance = 5000; // 50%
   uint256 frequencyTolerance = 12 hours;

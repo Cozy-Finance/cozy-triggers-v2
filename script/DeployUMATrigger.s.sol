@@ -9,7 +9,7 @@ contract DeployUMATrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  UMATriggerFactory factory = UMATriggerFactory(address(0xa48666D91Ac494A3CCA96A3A4357d998d8619387));
+  UMATriggerFactory factory = UMATriggerFactory(0xa48666D91Ac494A3CCA96A3A4357d998d8619387);
 
   string query = "q: title: Hop Protocol, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Hop protocol on Ethereum Mainnet at any point after Ethereum Mainnet block number 114400? This will revert if a 'no' answer is proposed.";
 
