@@ -17,7 +17,7 @@ contract DeployTriggerFactories is Script {
   // -------- UMA Trigger Factory --------
 
   // The UMA oracle finder on Optimism https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json
-  FinderInterface oracleFinder = FinderInterface(0x278d6b1aA37d09769E519f05FcC5923161A8536D);
+  FinderInterface umaOracleFinder = FinderInterface(0x278d6b1aA37d09769E519f05FcC5923161A8536D);
 
   // ---------------------------
   // -------- Execution --------
@@ -34,9 +34,9 @@ contract DeployTriggerFactories is Script {
 
     console2.log("Deploying UMATriggerFactory...");
     console2.log("    manager", address(manager));
-    console2.log("    oracleFinder", address(oracleFinder));
+    console2.log("    umaOracleFinder", address(umaOracleFinder));
     vm.broadcast();
-    factory = address(new UMATriggerFactory(manager, oracleFinder));
+    factory = address(new UMATriggerFactory(manager, umaOracleFinder));
     console2.log("UMATriggerFactory deployed", factory);
 
     console2.log("====================");

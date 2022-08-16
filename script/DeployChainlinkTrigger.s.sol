@@ -24,7 +24,7 @@ contract DeployChainlinkTrigger is Script {
 
   function run() public {
     console2.log("Deploying ChainlinkTrigger...");
-    console2.log("    ChainlinkTriggerFactory", address(factory));
+    console2.log("    chainlinkTriggerFactory", address(factory));
     console2.log("    truthOracle", address(truthOracle));
     console2.log("    trackingOracle", address(trackingOracle));
     console2.log("    priceTolerance", priceTolerance);

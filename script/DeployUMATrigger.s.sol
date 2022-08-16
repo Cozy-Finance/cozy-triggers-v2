@@ -27,7 +27,7 @@ contract DeployUMATrigger is Script {
 
   function run() public {
     console2.log("Deploying UMATrigger...");
-    console2.log("    UMATriggerFactory", address(factory));
+    console2.log("    umaTriggerFactory", address(factory));
     console2.log("    query", query);
     console2.log("    rewardToken", address(rewardToken));
     console2.log("    rewardAmount", rewardAmount);

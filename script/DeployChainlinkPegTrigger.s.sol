@@ -26,7 +26,7 @@ contract DeployChainlinkPegTrigger is Script {
 
   function run() public {
     console2.log("Deploying ChainlinkTrigger...");
-    console2.log("    ChainlinkTriggerFactory", address(factory));
+    console2.log("    chainlinkTriggerFactory", address(factory));
     console2.log("    pegPrice", uint256(pegPrice));
     console2.log("    decimals", decimals);
     console2.log("    trackingOracle", address(trackingOracle));
