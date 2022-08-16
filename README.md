@@ -7,3 +7,7 @@ Trigger contracts for Cozy V2.
 1. Install dependencies with `forge install`.
 2. Setup up environment variables by running `cp .env.example .env` and filling in the values.
 3. Run tests with `source .env && forge test`
+
+## Deploys
+
+For a list of live deployments, see [`broadcast/README.md`](./broadcast/README.md).
