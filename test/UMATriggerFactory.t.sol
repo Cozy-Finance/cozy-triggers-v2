@@ -97,7 +97,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     bytes memory _query
   ) public {
     // Warp forward in time so that if a new query is issued as a result of
-    // settlement it will not have the same block.timestamp as the original,
+    // settlement it will not have the same block.timestamp as the origainl,
     // which will cause the request to fail.
     vm.warp(block.timestamp + 42);
 
@@ -208,7 +208,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?"),
-      1 // A positive answer.
+      1e18 // A positive answer.
     );
 
     // Jump ahead to the very end of the dispute window.
@@ -254,7 +254,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?"),
-      1 // A positive answer.
+      1e18 // A positive answer.
     );
 
     // Warp past the liveness interval to avoid having to go through the DVM again.
@@ -320,7 +320,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?"),
-      1 // A positive answer.
+      1e18 // A positive answer.
     );
     vm.stopPrank();
 
@@ -339,7 +339,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     // Settle and have the DVM side with the proposer: there was indeed a hack.
     assertEq(_trigger.shouldTrigger(), false);
     _settleQueryViaDVM(
-      1, // The DVM returns a settled price of 1 == "YES".
+      1e18, // The DVM returns a settled price of 1 == "YES".
       address(_trigger),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?")
@@ -400,7 +400,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has USDT been hacked?"),
-      1 // A positive answer.
+      1e18 // A positive answer.
     );
     vm.stopPrank();
 

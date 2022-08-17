@@ -97,8 +97,9 @@ contract UMATrigger is BaseTrigger {
   /// @dev Thrown when a negative answer is proposed to the submitted query.
   error InvalidProposal();
 
-  int256 internal constant NEGATIVE_ANSWER = 0;
-  int256 internal constant AFFIRMATIVE_ANSWER = 1;
+  /// @dev UMA expects answers to be denominated as WADs. So, e.g., a p3 answer
+  /// of 0.5 would be represented as 0.5e18.
+  int256 internal constant AFFIRMATIVE_ANSWER = 1e18;
 
   constructor(
     IManager _manager,
