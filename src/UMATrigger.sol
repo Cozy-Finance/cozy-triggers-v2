@@ -4,6 +4,7 @@ pragma solidity 0.8.15;
 import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "uma-protocol/packages/core/contracts/oracle/interfaces/OptimisticOracleV2Interface.sol";
 import 'src/abstract/BaseTrigger.sol';
+import "src/lib/SafeTransferLib.sol";
 
 /**
  * @notice This is an automated trigger contract which will move markets into a
@@ -53,6 +54,7 @@ import 'src/abstract/BaseTrigger.sol';
  * with happens the trigger will immediately be notified.
  */
 contract UMATrigger is BaseTrigger {
+  using SafeTransferLib for IERC20;
 
   /// @notice The type of query that will be submitted to the oracle.
   bytes32 public constant queryIdentifier = bytes32("YES_OR_NO_QUERY");
@@ -256,7 +258,7 @@ contract UMATrigger is BaseTrigger {
       // Give the reward balance to the caller to make up for gas costs and
       // incentivize keeping markets in line with trigger state.
       uint256 _rewardBalance = rewardToken.balanceOf(address(this));
-      if (_rewardBalance > 0) rewardToken.transfer(msg.sender, _rewardBalance);
+      if (_rewardBalance > 0) rewardToken.safeTransfer(msg.sender, _rewardBalance);
 
       return _updateTriggerState(CState.TRIGGERED);
     }
