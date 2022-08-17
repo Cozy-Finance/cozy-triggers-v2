@@ -12,6 +12,11 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
   OptimisticOracleV2Interface umaOracle;
   IERC20 rewardToken;
 
+  int256 constant POSITIVE_ANSWER = 1e18;
+  int256 constant NEGATIVE_ANSWER = 0e18;
+  int256 constant INDETERMINATE_ANSWER = 0.5e18;
+  int256 constant TOO_EARLY_ANSWER = type(int256).min;
+
   event TriggerDeployed(
     address trigger,
     bytes32 indexed triggerConfigId,
@@ -120,6 +125,161 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     vm.clearMockedCalls();
   }
 
+  function testFork_RunProgrammaticCheckSettlesRequests(
+    int256 _settledAnswer,
+    bool _isDisputed,
+    bool _isExternallySettled
+  ) internal {
+    vm.selectFork(forkId);
+    uint256 _rewardAmount = 42;
+    uint256 _bondAmount = 4200;
+    uint256 _proposalDisputeWindow = 2 days;
+    string memory _query = "q: Has protocol XYZ been hacked?";
+
+    deal(address(rewardToken), address(this), _rewardAmount);
+    rewardToken.approve(address(factory), _rewardAmount);
+
+    UMATrigger _trigger = factory.deployTrigger(
+      _query,
+      rewardToken,
+      _rewardAmount,
+      _bondAmount,
+      _proposalDisputeWindow
+    );
+
+    uint256 _queryTimestamp = _trigger.requestTimestamp();
+    OptimisticOracleV2Interface.Request memory _umaRequest;
+    _umaRequest = umaOracle.getRequest(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes(_query)
+    );
+
+    // Fund the account and approve the umaOracle for the bondAmount so that an
+    // answer can be proposed.
+    deal(address(rewardToken), address(this), _bondAmount + _umaRequest.finalFee);
+    rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
+
+    if (_settledAnswer != POSITIVE_ANSWER) {
+      // Attempt to propose a non-YES answer, it should not succeed b/c the
+      // trigger reverts in a callback.
+      if ( _settledAnswer == TOO_EARLY_ANSWER) {
+        vm.expectRevert("Cannot propose 'too early'");
+      } else { vm.expectRevert(UMATrigger.InvalidProposal.selector);}
+      umaOracle.proposePrice(
+        address(_trigger),
+        bytes32("YES_OR_NO_QUERY"),
+        _queryTimestamp,
+        bytes(_query),
+        _settledAnswer
+      );
+
+      // Confirm that no answer succeeded in being proposed.
+      _umaRequest = umaOracle.getRequest(
+        address(_trigger),
+        bytes32("YES_OR_NO_QUERY"),
+        _queryTimestamp,
+        bytes(_query)
+      );
+      assertEq(_umaRequest.proposer, address(0));
+      assertEq(_umaRequest.proposedPrice, 0);
+    }
+
+    // We have to propose a positive answer to move the request lifecycle
+    // forward -- only positive answers are accepted as proposals.
+    umaOracle.proposePrice(
+      address(_trigger),
+      bytes32("YES_OR_NO_QUERY"),
+      _queryTimestamp,
+      bytes(_query),
+      POSITIVE_ANSWER
+    );
+
+    // Try calling runProgrammaticCheck. It should revert because the request
+    // isn't settleable yet.
+    vm.expectRevert(UMATrigger.Unsettleable.selector);
+    _trigger.runProgrammaticCheck();
+    assertEq(_trigger.state(), CState.FROZEN);
+
+    if (_isDisputed || _settledAnswer != POSITIVE_ANSWER) {
+      // Dispute the answer.
+      deal(address(rewardToken), address(0xBEEF), _bondAmount + _umaRequest.finalFee);
+      vm.startPrank(address(0xBEEF));
+      rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
+      umaOracle.disputePrice(
+        address(_trigger),
+        bytes32("YES_OR_NO_QUERY"),
+        _queryTimestamp,
+        bytes(_query)
+      );
+      vm.stopPrank();
+
+      // Have the DVM resolve to the _settledAnswer.
+      vm.warp(block.timestamp + _proposalDisputeWindow);
+      vm.mockCall(
+        address(_getDVM()),
+        abi.encodeWithSelector(OracleAncillaryInterface.hasPrice.selector),
+        abi.encode(true)
+      );
+      vm.mockCall(
+        address(_getDVM()),
+        abi.encodeWithSelector(OracleAncillaryInterface.getPrice.selector),
+        abi.encode(_settledAnswer)
+      );
+    } else {
+      // There is no need to dispute or appeal to the DVM; just run out the
+      // dispute window and UMA will settle on the proposed answer.
+      vm.warp(block.timestamp + _proposalDisputeWindow);
+    }
+
+    if (_isExternallySettled) {
+      assertEq(_trigger.shouldTrigger(), false);
+      // Call settle on the UMA contract.
+      umaOracle.settle(
+        address(_trigger),
+        bytes32("YES_OR_NO_QUERY"),
+        _queryTimestamp,
+        bytes(_query)
+      );
+      if (_settledAnswer == POSITIVE_ANSWER) {
+        assertEq(_trigger.shouldTrigger(), true);
+        // A new query should NOT have been submitted;
+        assertEq(_trigger.requestTimestamp(), _queryTimestamp);
+      } else {
+        // The market should return to the ACTIVE state.
+        assertEq(_trigger.state(), CState.ACTIVE);
+        // A new query SHOULD have been submitted;
+        assertGt(_trigger.requestTimestamp(), _queryTimestamp);
+      }
+    }
+
+    // A random user calls the programmatic check;
+    uint256 _initSettlerBalance = rewardToken.balanceOf(address(0xC0FFEE));
+    // The call will revert as unsettleable if the settled answer was not "YES",
+    // as a new query will have been submitted. The trigger checks on the
+    // status of the latest trigger in `runProgrammaticCheck`.
+    if (_settledAnswer != POSITIVE_ANSWER) vm.expectRevert(UMATrigger.Unsettleable.selector);
+    vm.prank(address(0xC0FFEE));
+    _trigger.runProgrammaticCheck();
+
+    if (_settledAnswer == POSITIVE_ANSWER) {
+      assertEq(_trigger.state(), CState.TRIGGERED);
+      if (_isDisputed) {
+        // The reward was sent to the caller.
+        assertEq(
+          rewardToken.balanceOf(address(0xC0FFEE)),
+          _initSettlerBalance + _rewardAmount
+        );
+      }
+    } else {
+      // The market should return to the ACTIVE state.
+      assertEq(_trigger.state(), CState.ACTIVE);
+      // A new query should have been issued to UMA at this point.
+      assertGt(_trigger.requestTimestamp(), _queryTimestamp);
+    }
+  }
+
   function testFork_DeployTriggerCreatesAUMARequest(
     uint96 _rewardAmount,
     uint96 _bondAmount,
@@ -165,50 +325,13 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     deal(address(rewardToken), address(this), _bondAmount + _umaRequest.finalFee);
     rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
 
-    // Attempt to propose a non-YES answer, it should not succeed b/c the
-    // trigger reverts in a callback.
-    vm.expectRevert(UMATrigger.InvalidProposal.selector);
-    umaOracle.proposePrice(
-      address(_trigger),
-      bytes32("YES_OR_NO_QUERY"),
-      _queryTimestamp,
-      bytes("Has Terra been hacked?"),
-      0 // A negative answer.
-    );
-    vm.expectRevert(UMATrigger.InvalidProposal.selector);
-    umaOracle.proposePrice(
-      address(_trigger),
-      bytes32("YES_OR_NO_QUERY"),
-      _queryTimestamp,
-      bytes("Has Terra been hacked?"),
-      0.5e18 // A "cannot be determined" answer.
-    );
-    vm.expectRevert("Cannot propose 'too early'");
-    umaOracle.proposePrice(
-      address(_trigger),
-      bytes32("YES_OR_NO_QUERY"),
-      _queryTimestamp,
-      bytes("Has Terra been hacked?"),
-      type(int256).min // A "too soon" answer.
-    );
-
-    // Confirm that no price succeeded in being proposed.
-    _umaRequest = umaOracle.getRequest(
-      address(_trigger),
-      bytes32("YES_OR_NO_QUERY"),
-      _queryTimestamp,
-      bytes("Has Terra been hacked?")
-    );
-    assertEq(_umaRequest.proposer, address(0));
-    assertEq(_umaRequest.proposedPrice, 0);
-
     // Propose a positive answer, it will succeed.
     umaOracle.proposePrice(
       address(_trigger),
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?"),
-      1e18 // A positive answer.
+      POSITIVE_ANSWER // A positive answer.
     );
 
     // Jump ahead to the very end of the dispute window.
@@ -228,7 +351,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
 
     // Settle and have the DVM side with the disputer: there was no hack.
     _settleQueryViaDVM(
-      0, // A "NO" answer.
+      NEGATIVE_ANSWER,
       address(_trigger),
       _queryTimestamp,
       bytes("Has Terra been hacked?")
@@ -254,7 +377,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?"),
-      1e18 // A positive answer.
+      POSITIVE_ANSWER // A positive answer.
     );
 
     // Warp past the liveness interval to avoid having to go through the DVM again.
@@ -320,7 +443,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?"),
-      1e18 // A positive answer.
+      POSITIVE_ANSWER // A positive answer.
     );
     vm.stopPrank();
 
@@ -339,7 +462,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     // Settle and have the DVM side with the proposer: there was indeed a hack.
     assertEq(_trigger.shouldTrigger(), false);
     _settleQueryViaDVM(
-      1e18, // The DVM returns a settled price of 1 == "YES".
+      POSITIVE_ANSWER, // The DVM returns a settled price of 1 == "YES".
       address(_trigger),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?")
@@ -400,7 +523,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has USDT been hacked?"),
-      1e18 // A positive answer.
+      POSITIVE_ANSWER // A positive answer.
     );
     vm.stopPrank();
 
@@ -421,7 +544,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
 
     // Settle and have the DVM side with the disputer: there was no hack.
     _settleQueryViaDVM(
-      0, // A "NO" answer.
+      NEGATIVE_ANSWER,
       address(_trigger),
       _queryTimestamp,
       bytes("Has USDT been hacked?")
@@ -460,6 +583,19 @@ contract DeployTriggerMainnetTest is DeployTriggerSharedTest {
   function testFork1_TriggerFreezesMarketsWhenAnswersAreProposed() public {
     testFork_TriggerFreezesMarketsWhenAnswersAreProposed(42, 2000, 12 hours);
   }
+  function testFork1_RunProgrammaticCheckSettlesRequests() public {
+    //                                            oracle answer,   externally settled,  disputed
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           false);
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            false);
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( INDETERMINATE_ANSWER, false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( INDETERMINATE_ANSWER, true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( TOO_EARLY_ANSWER,     false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( TOO_EARLY_ANSWER,     true,            true);
+  }
 }
 contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
   function setUp() public override {
@@ -489,5 +625,18 @@ contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
   }
   function testFork10_TriggerFreezesMarketsWhenAnswersAreProposed() public {
     testFork_TriggerFreezesMarketsWhenAnswersAreProposed(42, 2000, 12 hours);
+  }
+  function testFork10_RunProgrammaticCheckSettlesRequests() public {
+    //                                            oracle answer,   externally settled,  disputed
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           false);
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            false);
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( INDETERMINATE_ANSWER, false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( INDETERMINATE_ANSWER, true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( TOO_EARLY_ANSWER,     false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( TOO_EARLY_ANSWER,     true,            true);
   }
 }

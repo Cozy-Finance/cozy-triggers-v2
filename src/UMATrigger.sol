@@ -99,6 +99,9 @@ contract UMATrigger is BaseTrigger {
   /// @dev Thrown when a negative answer is proposed to the submitted query.
   error InvalidProposal();
 
+  /// @dev Thrown when the trigger attempts to settle an unsettleable UMA request.
+  error Unsettleable();
+
   /// @dev UMA expects answers to be denominated as wads. So, e.g., a p3 answer
   /// of 0.5 would be represented as 0.5e18.
   int256 internal constant AFFIRMATIVE_ANSWER = 1e18;
@@ -246,14 +249,43 @@ contract UMATrigger is BaseTrigger {
     }
   }
 
-  /// @notice Toggles the trigger if the UMA oracle has confirmed a positive
-  /// answer to the query.
+  /// @notice This function attempts to confirm and finalize (i.e. "settle") the
+  /// answer to the query with the UMA oracle. It reverts with Unsettleable if
+  /// it cannot settle the query, but does NOT revert if the oracle has already
+  /// settled the query on its own. If the oracle's answer is an
+  /// AFFIRMATIVE_ANSWER, this function will toggle the trigger and update
+  /// associated markets.
   function runProgrammaticCheck() external returns (CState) {
     // Rather than revert when triggered, we simply return the state and exit.
     // Both behaviors are acceptable, but returning is friendlier to the caller
     // as they don't need to handle a revert and can simply parse the
     // transaction's logs to know if the call resulted in a state change.
     if (state == CState.TRIGGERED) return state;
+
+    OptimisticOracleV2Interface _oracle = getOracle();
+    bool _oracleHasPrice = _oracle.hasPrice(
+      address(this),
+      queryIdentifier,
+      requestTimestamp,
+      bytes(query)
+    );
+    if (!_oracleHasPrice) revert Unsettleable();
+    OptimisticOracleV2Interface.Request memory _umaRequest;
+    _umaRequest = _oracle.getRequest(
+      address(this),
+      queryIdentifier,
+      requestTimestamp,
+      bytes(query)
+    );
+    if (!_umaRequest.settled) {
+      _oracle.settle(
+        address(this),
+        queryIdentifier,
+        requestTimestamp,
+        bytes(query)
+      );
+    }
+
     if (shouldTrigger) {
       // Give the reward balance to the caller to make up for gas costs and
       // incentivize keeping markets in line with trigger state.
