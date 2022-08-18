@@ -18,6 +18,14 @@ contract DeployChainlinkTrigger is Script {
   uint256 truthFrequencyTolerance = 1201;
   uint256 trackingFrequencyTolerance = 86401;
 
+  // The name of the trigger, as it should appear within the Cozy interface.
+  string triggerName = "stETH/ETH Trigger";
+
+  // A human-readable description of the intent of the trigger.
+  string triggerDescription = "A trigger that toggles if stETH depegs from ETH";
+
+  string triggerLogoURI = "https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png";
+
   // ---------------------------
   // -------- Execution --------
   // ---------------------------
@@ -32,7 +40,18 @@ contract DeployChainlinkTrigger is Script {
     console2.log("    trackingFrequencyTolerance", trackingFrequencyTolerance);
 
     vm.broadcast();
-    ChainlinkTrigger trigger = factory.deployTrigger(truthOracle, trackingOracle, priceTolerance, truthFrequencyTolerance, trackingFrequencyTolerance);
+    ChainlinkTrigger trigger = factory.deployTrigger(
+      truthOracle,
+      trackingOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance,
+      ChainlinkTriggerFactory.TriggerMetadata(
+        triggerName,
+        triggerDescription,
+        triggerLogoURI
+      )
+    );
     console2.log("ChainlinkTrigger deployed", address(trigger));
   }
 }
