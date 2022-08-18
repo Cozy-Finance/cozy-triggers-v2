@@ -270,8 +270,7 @@ contract UMATrigger is BaseTrigger {
       bytes(query)
     );
     if (!_oracleHasPrice) revert Unsettleable();
-    OptimisticOracleV2Interface.Request memory _umaRequest;
-    _umaRequest = _oracle.getRequest(
+    OptimisticOracleV2Interface.Request memory _umaRequest = _oracle.getRequest(
       address(this),
       queryIdentifier,
       requestTimestamp,

@@ -12,7 +12,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
   OptimisticOracleV2Interface umaOracle;
   IERC20 rewardToken;
 
-  int256 constant POSITIVE_ANSWER = 1e18;
+  int256 constant AFFIRMATIVE_ANSWER = 1e18;
   int256 constant NEGATIVE_ANSWER = 0e18;
   int256 constant INDETERMINATE_ANSWER = 0.5e18;
   int256 constant TOO_EARLY_ANSWER = type(int256).min;
@@ -161,7 +161,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     deal(address(rewardToken), address(this), _bondAmount + _umaRequest.finalFee);
     rewardToken.approve(address(umaOracle), _bondAmount + _umaRequest.finalFee);
 
-    if (_settledAnswer != POSITIVE_ANSWER) {
+    if (_settledAnswer != AFFIRMATIVE_ANSWER) {
       // Attempt to propose a non-YES answer, it should not succeed b/c the
       // trigger reverts in a callback.
       if ( _settledAnswer == TOO_EARLY_ANSWER) {
@@ -193,7 +193,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes(_query),
-      POSITIVE_ANSWER
+      AFFIRMATIVE_ANSWER
     );
 
     // Try calling runProgrammaticCheck. It should revert because the request
@@ -202,7 +202,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     _trigger.runProgrammaticCheck();
     assertEq(_trigger.state(), CState.FROZEN);
 
-    if (_isDisputed || _settledAnswer != POSITIVE_ANSWER) {
+    if (_isDisputed || _settledAnswer != AFFIRMATIVE_ANSWER) {
       // Dispute the answer.
       deal(address(rewardToken), address(0xBEEF), _bondAmount + _umaRequest.finalFee);
       vm.startPrank(address(0xBEEF));
@@ -242,7 +242,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
         _queryTimestamp,
         bytes(_query)
       );
-      if (_settledAnswer == POSITIVE_ANSWER) {
+      if (_settledAnswer == AFFIRMATIVE_ANSWER) {
         assertEq(_trigger.shouldTrigger(), true);
         // A new query should NOT have been submitted;
         assertEq(_trigger.requestTimestamp(), _queryTimestamp);
@@ -259,11 +259,11 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     // The call will revert as unsettleable if the settled answer was not "YES",
     // as a new query will have been submitted. The trigger checks on the
     // status of the latest trigger in `runProgrammaticCheck`.
-    if (_settledAnswer != POSITIVE_ANSWER) vm.expectRevert(UMATrigger.Unsettleable.selector);
+    if (_settledAnswer != AFFIRMATIVE_ANSWER) vm.expectRevert(UMATrigger.Unsettleable.selector);
     vm.prank(address(0xC0FFEE));
     _trigger.runProgrammaticCheck();
 
-    if (_settledAnswer == POSITIVE_ANSWER) {
+    if (_settledAnswer == AFFIRMATIVE_ANSWER) {
       assertEq(_trigger.state(), CState.TRIGGERED);
       if (_isDisputed) {
         // The reward was sent to the caller.
@@ -331,7 +331,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?"),
-      POSITIVE_ANSWER // A positive answer.
+      AFFIRMATIVE_ANSWER // A positive answer.
     );
 
     // Jump ahead to the very end of the dispute window.
@@ -377,7 +377,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Terra been hacked?"),
-      POSITIVE_ANSWER // A positive answer.
+      AFFIRMATIVE_ANSWER // A positive answer.
     );
 
     // Warp past the liveness interval to avoid having to go through the DVM again.
@@ -443,7 +443,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?"),
-      POSITIVE_ANSWER // A positive answer.
+      AFFIRMATIVE_ANSWER // A positive answer.
     );
     vm.stopPrank();
 
@@ -462,7 +462,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     // Settle and have the DVM side with the proposer: there was indeed a hack.
     assertEq(_trigger.shouldTrigger(), false);
     _settleQueryViaDVM(
-      POSITIVE_ANSWER, // The DVM returns a settled price of 1 == "YES".
+      AFFIRMATIVE_ANSWER, // The DVM returns a settled price of 1 == "YES".
       address(_trigger),
       _queryTimestamp,
       bytes("Has Mt Gox been hacked?")
@@ -523,7 +523,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes32("YES_OR_NO_QUERY"),
       _queryTimestamp,
       bytes("Has USDT been hacked?"),
-      POSITIVE_ANSWER // A positive answer.
+      AFFIRMATIVE_ANSWER // A positive answer.
     );
     vm.stopPrank();
 
@@ -585,10 +585,10 @@ contract DeployTriggerMainnetTest is DeployTriggerSharedTest {
   }
   function testFork1_RunProgrammaticCheckSettlesRequests() public {
     //                                            oracle answer,   externally settled,  disputed
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           false);
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            false);
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           true);
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   false,           false);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   true,            false);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   true,            true);
     testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      false,           true);
     testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      true,            true);
     testFork_RunProgrammaticCheckSettlesRequests( INDETERMINATE_ANSWER, false,           true);
@@ -628,10 +628,10 @@ contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
   }
   function testFork10_RunProgrammaticCheckSettlesRequests() public {
     //                                            oracle answer,   externally settled,  disputed
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           false);
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            false);
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      false,           true);
-    testFork_RunProgrammaticCheckSettlesRequests( POSITIVE_ANSWER,      true,            true);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   false,           false);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   true,            false);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   false,           true);
+    testFork_RunProgrammaticCheckSettlesRequests( AFFIRMATIVE_ANSWER,   true,            true);
     testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      false,           true);
     testFork_RunProgrammaticCheckSettlesRequests( NEGATIVE_ANSWER,      true,            true);
     testFork_RunProgrammaticCheckSettlesRequests( INDETERMINATE_ANSWER, false,           true);
