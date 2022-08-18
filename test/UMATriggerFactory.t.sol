@@ -25,7 +25,10 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     address indexed rewardToken,
     uint256 rewardAmount,
     uint256 bondAmount,
-    uint256 proposalDisputeWindow
+    uint256 proposalDisputeWindow,
+    string name,
+    string description,
+    string logoURI
   );
 
   function setUp() public virtual override {
@@ -66,7 +69,10 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       address(rewardToken),
       _rewardAmount,
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      "Terra hack trigger",
+      "A trigger that will toggle if Terra is hacked",
+      "https://via.placeholder.com/150"
     );
 
     UMATrigger _trigger = factory.deployTrigger(
@@ -74,7 +80,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       rewardToken,
       uint256(_rewardAmount),
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      UMATriggerFactory.TriggerMetadata(
+        "Terra hack trigger",
+        "A trigger that will toggle if Terra is hacked",
+        "https://via.placeholder.com/150"
+      )
     );
 
     assertEq(address(_trigger), _computedTriggerAddress);
@@ -144,7 +155,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       rewardToken,
       _rewardAmount,
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      UMATriggerFactory.TriggerMetadata(
+        "XYZ hack trigger",
+        "A trigger that will toggle if XYZ is hacked",
+        "https://via.placeholder.com/150"
+      )
     );
 
     uint256 _queryTimestamp = _trigger.requestTimestamp();
@@ -295,7 +311,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       rewardToken,
       uint256(_rewardAmount),
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      UMATriggerFactory.TriggerMetadata(
+        "Terra hack trigger",
+        "A trigger that will toggle if Terra is hacked",
+        "https://via.placeholder.com/150"
+      )
     );
 
     uint256 _queryTimestamp = _trigger.requestTimestamp();
@@ -420,7 +441,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       rewardToken,
       uint256(_rewardAmount),
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      UMATriggerFactory.TriggerMetadata(
+        "Mt. Gox hack trigger",
+        "A trigger that will toggle if Mt. Gox is hacked",
+        "https://via.placeholder.com/150"
+      )
     );
     // Ensure that the entire allowance has been spent.
     assertEq(rewardToken.allowance(address(this), address(factory)), 0);
@@ -493,7 +519,12 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       rewardToken,
       uint256(_rewardAmount),
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      UMATriggerFactory.TriggerMetadata(
+        "USDT hack trigger",
+        "A trigger that will toggle if USDT is hacked",
+        "https://via.placeholder.com/150"
+      )
     );
     uint256 _queryTimestamp = block.timestamp;
 
