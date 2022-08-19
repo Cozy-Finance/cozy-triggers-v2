@@ -41,19 +41,49 @@ contract DeployChainlinkPegTrigger is Script {
     console2.log("    priceTolerance", priceTolerance);
     console2.log("    frequencyTolerance", frequencyTolerance);
 
+    // First we attempt to deploy the fixed price truth oracle.
     vm.broadcast();
-    ChainlinkTrigger trigger = factory.deployTrigger(
+    AggregatorV3Interface _truthOracle = factory.deployFixedPriceAggregator(
       pegPrice,
-      decimals,
+      decimals
+    );
+
+    // Check to see if a trigger has already been deployed with the desired configs.
+    address _availableTrigger = factory.findAvailableTrigger(
+      _truthOracle,
       trackingOracle,
       priceTolerance,
-      frequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
-        triggerName,
-        triggerDescription,
-        triggerLogoURI
-      )
+      0, // The truth oracle frequency tolerance used by the factory.
+      frequencyTolerance
     );
-    console2.log("ChainlinkTrigger deployed", address(trigger));
+
+    if (_availableTrigger == address(0)) {
+      // There is no available trigger that has your desired configuration. We
+      // will have to deploy a new one!
+      vm.broadcast();
+      _availableTrigger = address(
+        factory.deployTrigger(
+          pegPrice,
+          decimals,
+          trackingOracle,
+          priceTolerance,
+          frequencyTolerance,
+          ChainlinkTriggerFactory.TriggerMetadata(
+            triggerName,
+            triggerDescription,
+            triggerLogoURI
+          )
+        )
+      );
+    } else {
+      // A trigger exactly like the one you wanted already exists!
+      // Since triggers can be re-used, there's no need to deploy a new one.
+      console2.log("Found existing trigger with specified configs.");
+    }
+
+    console2.log(
+      "Your ChainlinkTrigger is available at this address:",
+      _availableTrigger
+    );
   }
 }

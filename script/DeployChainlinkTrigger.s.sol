@@ -39,19 +39,43 @@ contract DeployChainlinkTrigger is Script {
     console2.log("    truthFrequencyTolerance", truthFrequencyTolerance);
     console2.log("    trackingFrequencyTolerance", trackingFrequencyTolerance);
 
-    vm.broadcast();
-    ChainlinkTrigger trigger = factory.deployTrigger(
+    // Check to see if a trigger has already been deployed with the desired configs.
+    address _availableTrigger = factory.findAvailableTrigger(
       truthOracle,
       trackingOracle,
       priceTolerance,
       truthFrequencyTolerance,
-      trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
-        triggerName,
-        triggerDescription,
-        triggerLogoURI
-      )
+      trackingFrequencyTolerance
     );
-    console2.log("ChainlinkTrigger deployed", address(trigger));
+
+    if (_availableTrigger == address(0)) {
+      // There is no available trigger that has your desired configuration. We
+      // will have to deploy a new one!
+      vm.broadcast();
+      _availableTrigger = address(
+        factory.deployTrigger(
+          truthOracle,
+          trackingOracle,
+          priceTolerance,
+          truthFrequencyTolerance,
+          trackingFrequencyTolerance,
+          ChainlinkTriggerFactory.TriggerMetadata(
+            triggerName,
+            triggerDescription,
+            triggerLogoURI
+          )
+        )
+      );
+      console2.log("New trigger deployed!");
+    } else {
+      // A trigger exactly like the one you wanted already exists!
+      // Since triggers can be re-used, there's no need to deploy a new one.
+      console2.log("Found existing trigger with specified configs.");
+    }
+
+    console2.log(
+      "Your ChainlinkTrigger is available at this address:",
+      _availableTrigger
+    );
   }
 }
