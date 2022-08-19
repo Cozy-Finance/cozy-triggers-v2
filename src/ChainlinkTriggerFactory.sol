@@ -29,6 +29,15 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   // This is just the 32 bytes you get when you keccak256(abi.encode(42)).
   bytes32 internal constant FIXED_PRICE_ORACLE_SALT = 0xbeced09521047d05b8960b7e7bcc1d1292cf3e4b2a6b63f48335cbde5f7545d2;
 
+  struct TriggerMetadata {
+    // The name that should be used for markets that use the trigger.
+    string name;
+    // A human-readable description of the trigger.
+    string description;
+    // The URI of a logo image to represent the trigger.
+    string logoURI;
+  }
+
   /// @param _manager Address of the Cozy protocol manager.
   constructor(IManager _manager) {
     manager = _manager;
@@ -46,12 +55,14 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   /// have for the truth oracle. See ChainlinkTrigger.truthFrequencyTolerance() for more information.
   /// @param _trackingFrequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
+  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     AggregatorV3Interface _truthOracle,
     AggregatorV3Interface _trackingOracle,
     uint256 _priceTolerance,
     uint256 _truthFrequencyTolerance,
-    uint256 _trackingFrequencyTolerance
+    uint256 _trackingFrequencyTolerance,
+    TriggerMetadata memory _metadata
   ) public returns (ChainlinkTrigger _trigger) {
     if (_truthOracle.decimals() != _trackingOracle.decimals()) revert InvalidOraclePair();
 
@@ -63,7 +74,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
       _trackingFrequencyTolerance
     );
 
-    uint256 _triggerCount = triggerCount[_configId];
+    uint256 _triggerCount = triggerCount[_configId]++;
     bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid));
 
     _trigger = new ChainlinkTrigger{salt: _salt}(
@@ -75,8 +86,6 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
       _trackingFrequencyTolerance
     );
 
-    triggerCount[_configId] += 1;
-
     emit TriggerDeployed(
       address(_trigger),
       _configId,
@@ -84,7 +93,10 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
       address(_trackingOracle),
       _priceTolerance,
       _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
+      _trackingFrequencyTolerance,
+      _metadata.name,
+      _metadata.description,
+      _metadata.logoURI
     );
   }
 
@@ -100,18 +112,28 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   /// have. See ChainlinkTrigger.priceTolerance() for more information.
   /// @param _frequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
+  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     int256 _price,
     uint8 _decimals,
     AggregatorV3Interface _trackingOracle,
     uint256 _priceTolerance,
-    uint256 _frequencyTolerance
+    uint256 _frequencyTolerance,
+    TriggerMetadata memory _metadata
   ) public returns (ChainlinkTrigger _trigger) {
     AggregatorV3Interface _truthOracle = deployFixedPriceAggregator(_price, _decimals);
 
-    // For the truth FixedPriceAggregator peg oracle, we use a frequency tolerance of 0 since it should always return
-    // block.timestamp as the updatedAt timestamp.
-    return deployTrigger(_truthOracle, _trackingOracle, _priceTolerance, 0, _frequencyTolerance);
+    return deployTrigger(
+      _truthOracle,
+      _trackingOracle,
+      _priceTolerance,
+      // For the truth FixedPriceAggregator peg oracle, we use a frequency
+      // tolerance of 0 since it should always return block.timestamp as the
+      // updatedAt timestamp.
+      0,
+      _frequencyTolerance,
+      _metadata
+    );
   }
 
   /// @notice Call this function to determine the address at which a trigger

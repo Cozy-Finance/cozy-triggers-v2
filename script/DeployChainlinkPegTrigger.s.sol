@@ -20,6 +20,14 @@ contract DeployChainlinkPegTrigger is Script {
   uint256 priceTolerance = 5000; // 50%
   uint256 frequencyTolerance = 12 hours;
 
+  // The name of the trigger, as it should appear within the Cozy interface.
+  string triggerName = "Peg Protection Trigger";
+
+  // A human-readable description of the intent of the trigger.
+  string triggerDescription = "A trigger that toggles if the asset depegs";
+
+  string triggerLogoURI = "https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png";
+
   // ---------------------------
   // -------- Execution --------
   // ---------------------------
@@ -34,7 +42,18 @@ contract DeployChainlinkPegTrigger is Script {
     console2.log("    frequencyTolerance", frequencyTolerance);
 
     vm.broadcast();
-    ChainlinkTrigger trigger = factory.deployTrigger(pegPrice, decimals, trackingOracle, priceTolerance, frequencyTolerance);
+    ChainlinkTrigger trigger = factory.deployTrigger(
+      pegPrice,
+      decimals,
+      trackingOracle,
+      priceTolerance,
+      frequencyTolerance,
+      ChainlinkTriggerFactory.TriggerMetadata(
+        triggerName,
+        triggerDescription,
+        triggerLogoURI
+      )
+    );
     console2.log("ChainlinkTrigger deployed", address(trigger));
   }
 }

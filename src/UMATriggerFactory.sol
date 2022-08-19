@@ -26,8 +26,11 @@ contract UMATriggerFactory {
   mapping(bytes32 => uint256) public triggerCount;
 
   /// @dev Emitted when the factory deploys a trigger.
-  /// The `trigger` is the address at which the trigger was deployed.
-  /// For `triggerConfigId`, see the function of the same name in this contract.
+  /// @param trigger The address at which the trigger was deployed.
+  /// @param triggerConfigId See the function of the same name in this contract.
+  /// @param name The name that should be used for markets that use the trigger.
+  /// @param description A human-readable description of the trigger.
+  /// @param logoURI The URI of a logo image to represent the trigger.
   /// For other attributes, see the docs for the params of `deployTrigger` in
   /// this contract.
   event TriggerDeployed(
@@ -38,8 +41,20 @@ contract UMATriggerFactory {
     address indexed rewardToken,
     uint256 rewardAmount,
     uint256 bondAmount,
-    uint256 proposalDisputeWindow
+    uint256 proposalDisputeWindow,
+    string name,
+    string description,
+    string logoURI
   );
+
+  struct TriggerMetadata {
+    // The name that should be used for markets that use the trigger.
+    string name;
+    // A human-readable description of the trigger.
+    string description;
+    // The URI of a logo image to represent the trigger.
+    string logoURI;
+  }
 
   error TriggerAddressMismatch();
 
@@ -65,12 +80,14 @@ contract UMATriggerFactory {
   /// more information. It's recommended that the dispute window be fairly long
   /// (12-24 hours), given the difficulty of assessing expected queries (e.g.
   /// "Was protocol ABCD hacked") and the amount of funds potentially at stake.
+  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     string memory _query,
     IERC20 _rewardToken,
     uint256 _rewardAmount,
     uint256 _bondAmount,
-    uint256 _proposalDisputeWindow
+    uint256 _proposalDisputeWindow,
+    TriggerMetadata memory _metadata
   ) external returns(UMATrigger _trigger) {
     bytes32 _configId = triggerConfigId(
       _query,
@@ -81,7 +98,6 @@ contract UMATriggerFactory {
     );
 
     uint256 _triggerCount = triggerCount[_configId]++;
-    bytes32 _salt = _getSalt(_triggerCount, _rewardAmount);
 
     address _triggerAddress = computeTriggerAddress(
       _query,
@@ -94,7 +110,7 @@ contract UMATriggerFactory {
 
     _rewardToken.safeTransferFrom(msg.sender, _triggerAddress, _rewardAmount);
 
-    _trigger = new UMATrigger{salt: _salt}(
+    _trigger = new UMATrigger{salt: _getSalt(_triggerCount, _rewardAmount)}(
       manager,
       oracleFinder,
       _query,
@@ -113,7 +129,10 @@ contract UMATriggerFactory {
       address(_rewardToken),
       _rewardAmount,
       _bondAmount,
-      _proposalDisputeWindow
+      _proposalDisputeWindow,
+      _metadata.name,
+      _metadata.description,
+      _metadata.logoURI
     );
   }
 
