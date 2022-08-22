@@ -84,8 +84,8 @@ ChainlinkTrigger deployed 0x3424517a4db48479e442867a89634bE81a494054
 - priceTolerance 5000
 - frequencyTolerance 86400
 - triggerName USDT Peg Protection
-- triggerName A trigger that toggles if the Chainlink USDT / USD oracle on Optimism diverges from $1.00 USD by more than 50%.
-- triggerName https://s2.coinmarketcap.com/static/img/coins/64x64/825.png
+- triggerDescription A trigger that toggles if the Chainlink USDT / USD oracle on Optimism diverges from $1.00 USD by more than 50%.
+- triggerLogoURI https://s2.coinmarketcap.com/static/img/coins/64x64/825.png
 
 #### Trigger 1
 
