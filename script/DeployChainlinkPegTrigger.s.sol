@@ -67,8 +67,8 @@ contract DeployChainlinkPegTrigger is Script {
     console2.log("    priceTolerance", priceTolerance);
     console2.log("    frequencyTolerance", frequencyTolerance);
     console2.log("    triggerName", triggerName);
-    console2.log("    triggerName", triggerDescription);
-    console2.log("    triggerName", triggerLogoURI);
+    console2.log("    triggerDescription", triggerDescription);
+    console2.log("    triggerLogoURI", triggerLogoURI);
 
     vm.broadcast();
     ChainlinkTrigger trigger = factory.deployTrigger(

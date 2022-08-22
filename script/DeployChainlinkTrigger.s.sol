@@ -64,6 +64,9 @@ contract DeployChainlinkTrigger is Script {
     console2.log("    priceTolerance", priceTolerance);
     console2.log("    truthFrequencyTolerance", truthFrequencyTolerance);
     console2.log("    trackingFrequencyTolerance", trackingFrequencyTolerance);
+    console2.log("    triggerName", triggerName);
+    console2.log("    triggerDescription", triggerDescription);
+    console2.log("    triggerLogoURI", triggerLogoURI);
 
     vm.broadcast();
     ChainlinkTrigger trigger = factory.deployTrigger(
