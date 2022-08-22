@@ -4,6 +4,32 @@ pragma solidity 0.8.15;
 import "forge-std/Script.sol";
 import "src/ChainlinkTriggerFactory.sol";
 
+/**
+  * @notice Purpose: Local deploy, testing, and production.
+  *
+  * This script deploys a Chainlink trigger using a ChainlinkTriggerFactory.
+  *
+  * To run this script:
+  *
+  * ```sh
+  * # Start anvil, forking from the current state of the desired chain.
+  * anvil --fork-url $OPTIMISM_RPC_URL
+  *
+  * # In a separate terminal, perform a dry run the script.
+  * forge script script/DeployChainlinkTrigger.s.sol \
+  *   --rpc-url "http://127.0.0.1:8545" \
+  *   -vvvv
+  *
+  * # Or, to broadcast transactions with etherscan verification.
+  * forge script script/DeployChainlinkTrigger.s.sol \
+  *   --rpc-url "http://127.0.0.1:8545" \
+  *   --private-key $OWNER_PRIVATE_KEY \
+  *   --etherscan-api-key $ETHERSCAN_KEY \
+  *   --verify \
+  *   --broadcast \
+  *   -vvvv
+  * ```
+ */
 contract DeployChainlinkTrigger is Script {
   // -------------------------------
   // -------- Configuration --------

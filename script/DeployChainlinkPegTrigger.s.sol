@@ -5,28 +5,54 @@ import "forge-std/Script.sol";
 import "src/ChainlinkTriggerFactory.sol";
 import "test/utils/MockChainlinkOracle.sol";
 
+/**
+  * @notice Purpose: Local deploy, testing, and production.
+  *
+  * This script deploys a Chainlink peg trigger using a ChainlinkTriggerFactory.
+  *
+  * To run this script:
+  *
+  * ```sh
+  * # Start anvil, forking from the current state of the desired chain.
+  * anvil --fork-url $OPTIMISM_RPC_URL
+  *
+  * # In a separate terminal, perform a dry run the script.
+  * forge script script/DeployChainlinkPegTrigger.s.sol \
+  *   --rpc-url "http://127.0.0.1:8545" \
+  *   -vvvv
+  *
+  * # Or, to broadcast transactions with etherscan verification.
+  * forge script script/DeployChainlinkPegTrigger.s.sol \
+  *   --rpc-url "http://127.0.0.1:8545" \
+  *   --private-key $OWNER_PRIVATE_KEY \
+  *   --etherscan-api-key $ETHERSCAN_KEY \
+  *   --verify \
+  *   --broadcast \
+  *   -vvvv
+  * ```
+ */
 contract DeployChainlinkPegTrigger is Script {
   // -------------------------------
   // -------- Configuration --------
   // -------------------------------
 
-  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0x1eB3f4a379e7BfAf57331FC9BCb5b4763122E48B);
+  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864);
 
   int256 pegPrice = 1e8;
   uint8 decimals = 8;
 
-  AggregatorV3Interface trackingOracle = AggregatorV3Interface(0x82f6491eF3bb1467C1cb283cDC7Df18B2B9b968E);
+  AggregatorV3Interface trackingOracle = AggregatorV3Interface(0xECef79E109e997bCA29c1c0897ec9d7b03647F5E);
 
   uint256 priceTolerance = 5000; // 50%
-  uint256 frequencyTolerance = 12 hours;
+  uint256 frequencyTolerance = 24 hours;
 
   // The name of the trigger, as it should appear within the Cozy interface.
-  string triggerName = "Peg Protection Trigger";
+  string triggerName = "USDT Peg Protection";
 
   // A human-readable description of the intent of the trigger.
-  string triggerDescription = "A trigger that toggles if the asset depegs";
+  string triggerDescription = "A trigger that toggles if the Chainlink USDT / USD oracle on Optimism diverges from $1.00 USD by more than 50%.";
 
-  string triggerLogoURI = "https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png";
+  string triggerLogoURI = "https://s2.coinmarketcap.com/static/img/coins/64x64/825.png";
 
   // ---------------------------
   // -------- Execution --------
@@ -40,6 +66,9 @@ contract DeployChainlinkPegTrigger is Script {
     console2.log("    trackingOracle", address(trackingOracle));
     console2.log("    priceTolerance", priceTolerance);
     console2.log("    frequencyTolerance", frequencyTolerance);
+    console2.log("    triggerName", triggerName);
+    console2.log("    triggerName", triggerDescription);
+    console2.log("    triggerName", triggerLogoURI);
 
     vm.broadcast();
     ChainlinkTrigger trigger = factory.deployTrigger(

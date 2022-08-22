@@ -4,14 +4,40 @@ pragma solidity 0.8.15;
 import "forge-std/Script.sol";
 import "src/UMATriggerFactory.sol";
 
+/**
+  * @notice Purpose: Local deploy, testing, and production.
+  *
+  * This script deploys an UMA trigger using an UMATriggerFactory.
+  *
+  * To run this script:
+  *
+  * ```sh
+  * # Start anvil, forking from the current state of the desired chain.
+  * anvil --fork-url $OPTIMISM_RPC_URL
+  *
+  * # In a separate terminal, perform a dry run the script.
+  * forge script script/DeployUMATrigger.s.sol \
+  *   --rpc-url "http://127.0.0.1:8545" \
+  *   -vvvv
+  *
+  * # Or, to broadcast transactions with etherscan verification.
+  * forge script script/DeployUMATrigger.s.sol \
+  *   --rpc-url "http://127.0.0.1:8545" \
+  *   --private-key $OWNER_PRIVATE_KEY \
+  *   --etherscan-api-key $ETHERSCAN_KEY \
+  *   --verify \
+  *   --broadcast \
+  *   -vvvv
+  * ```
+ */
 contract DeployUMATrigger is Script {
   // -------------------------------
   // -------- Configuration --------
   // -------------------------------
 
-  UMATriggerFactory factory = UMATriggerFactory(0xa48666D91Ac494A3CCA96A3A4357d998d8619387);
+  UMATriggerFactory factory = UMATriggerFactory(0x87A848fA89917988F4B9E4518CeBc82b9e998a4B);
 
-  string query = "q: title: Was there a Hop Protocol hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Hop protocol (https://app.hop.exchange) on Ethereum Mainnet at any point after Ethereum Mainnet block number 114400? This will revert if a non-YES answer is proposed.";
+  string query = "q: title: Was there a Nomad Protocol hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Nomad protocol (https://app.nomad.xyz/) at any point after Ethereum Mainnet block number 15391430? This will revert if a non-YES answer is proposed.";
 
   IERC20 rewardToken = IERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
 
@@ -24,12 +50,12 @@ contract DeployUMATrigger is Script {
   uint256 proposalDisputeWindow = 2 days;
 
   // The name of the trigger, as it should appear within the Cozy interface.
-  string triggerName = "Hop hack trigger";
+  string triggerName = "Nomad Protection";
 
   // A human-readable description of the intent of the trigger.
-  string triggerDescription = "A trigger that toggles if the Hop protocol is hacked";
+  string triggerDescription = "General purpose protection against the Nomad protocol getting hacked.";
 
-  string triggerLogoURI = "https://twitter.com/HopProtocol/photo";
+  string triggerLogoURI = "https://pbs.twimg.com/profile_images/1513895777709400070/AIiERUfX_400x400.png";
 
   // ---------------------------
   // -------- Execution --------

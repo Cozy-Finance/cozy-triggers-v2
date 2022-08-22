@@ -8,6 +8,26 @@ Deploys are sorted by timestamp, with the most recent one first.
 
 ### Trigger Factories
 
+#### Deploy 2
+
+**Metadata:**
+
+- Timestamp: 1661186263
+- Parsed timestamp: 2022-08-22T16:37:43.000Z
+- Commit: 6b5bbbd84ecd2d87cef772f87cdd2fea94e6804d
+
+**Configuration:**
+
+- manager 0x1f513585D8bB1F994b37F2aaAB3F8499E52ca534
+- umaOracleFinder 0x278d6b1aA37d09769E519f05FcC5923161A8536D
+
+**Deployments:**
+
+- ChainlinkTriggerFactory deployed 0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864
+- UMATriggerFactory deployed 0x87A848fA89917988F4B9E4518CeBc82b9e998a4B
+
+#### Deploy 1
+
 **Metadata:**
 
 - Timestamp: 1660588222
@@ -45,6 +65,28 @@ ChainlinkTrigger deployed 0xA067443b7f4A00e2c582f1e6aDf3F3a090C568AE
 
 ### Chainlink Peg Triggers
 
+#### Trigger 2
+
+ChainlinkTrigger deployed 0x3424517a4db48479e442867a89634bE81a494054
+
+**Metadata:**
+
+- Timestamp: 1661186636
+- Parsed timestamp: 2022-08-22T16:43:56.000Z
+
+**Configuration:**
+
+- chainlinkTriggerFactory 0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864
+- pegPrice 100000000
+- decimals 8
+- truthOracle 0x604d0e8fb90db7d42baef32edc6416e586eb3f14
+- trackingOracle 0xECef79E109e997bCA29c1c0897ec9d7b03647F5E
+- priceTolerance 5000
+- frequencyTolerance 86400
+- triggerName USDT Peg Protection
+- triggerName A trigger that toggles if the Chainlink USDT / USD oracle on Optimism diverges from $1.00 USD by more than 50%.
+- triggerName https://s2.coinmarketcap.com/static/img/coins/64x64/825.png
+
 #### Trigger 1
 
 ChainlinkTrigger deployed 0x5b0E6cD94854558aa2E0b0bc7aDD36b2147bFC13
@@ -64,6 +106,27 @@ ChainlinkTrigger deployed 0x5b0E6cD94854558aa2E0b0bc7aDD36b2147bFC13
 - frequencyTolerance 43200
 
 ### UMA Triggers
+
+#### Trigger 6
+
+UMATrigger deployed 0x349fc66424445F35DA9F1660DE2B83bf75181DB6
+
+**Metadata:**
+
+- Timestamp: 1661187280
+- Parsed timestamp: 2022-08-22T16:54:40.000Z
+
+**Configuration:**
+
+- umaTriggerFactory 0x87A848fA89917988F4B9E4518CeBc82b9e998a4B
+- query q: title: Was there a Nomad Protocol hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Nomad protocol (https://app.nomad.xyz/) at any point after Ethereum Mainnet block number 15391430? This will revert if a non-YES answer is proposed.
+- rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
+- rewardAmount 5000000
+- bondAmount 10000000
+- proposalDisputeWindow 172800
+- triggerName Nomad Protection
+- triggerDescription General purpose protection against the Nomad protocol getting hacked.
+- triggerLogoURI https://pbs.twimg.com/profile_images/1513895777709400070/AIiERUfX_400x400.png
 
 #### Trigger 5
 
