@@ -194,7 +194,7 @@ contract UMATrigger is BaseTrigger {
     // event related to the specific query we care about. It is possible, for
     // example, for multiple queries to be submitted to the oracle that differ
     // only with respect to timestamp. So we want to make sure we know which
-    // query the oracle has settled on an answer to.
+    // query the answer is for.
     if (
       msg.sender != address(_oracle) ||
       _timestamp != requestTimestamp ||
