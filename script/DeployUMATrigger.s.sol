@@ -17,6 +17,8 @@ contract DeployUMATrigger is Script {
 
   uint256 rewardAmount = 5e6;
 
+  address refundRecipient = address(0xBEEF);
+
   // It's recommended that the bond be at least twice as high as the reward.
   uint256 bondAmount = 10e6;
 
@@ -41,6 +43,7 @@ contract DeployUMATrigger is Script {
     console2.log("    query", query);
     console2.log("    rewardToken", address(rewardToken));
     console2.log("    rewardAmount", rewardAmount);
+    console2.log("    refundRecipient", refundRecipient);
     console2.log("    bondAmount", bondAmount);
     console2.log("    proposalDisputeWindow", proposalDisputeWindow);
     console2.log("    triggerName", triggerName);
@@ -52,6 +55,7 @@ contract DeployUMATrigger is Script {
       query,
       rewardToken,
       rewardAmount,
+      refundRecipient,
       bondAmount,
       proposalDisputeWindow
     );
@@ -71,6 +75,7 @@ contract DeployUMATrigger is Script {
           query,
           rewardToken,
           rewardAmount,
+          refundRecipient,
           bondAmount,
           proposalDisputeWindow,
           UMATriggerFactory.TriggerMetadata(

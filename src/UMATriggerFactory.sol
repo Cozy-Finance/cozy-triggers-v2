@@ -40,6 +40,7 @@ contract UMATriggerFactory {
     string query,
     address indexed rewardToken,
     uint256 rewardAmount,
+    address refundRecipient,
     uint256 bondAmount,
     uint256 proposalDisputeWindow,
     string name,
@@ -68,8 +69,10 @@ contract UMATriggerFactory {
   /// Oracle for evaluation.
   /// @param _rewardToken The token used to pay the reward to users that propose
   /// answers to the query.
-  /// @param _rewardAmount The amount of rewardToken that will be paid to users
-  /// who propose an answer to the query.
+  /// @param _rewardAmount The amount of rewardToken that will be paid as a
+  /// reward to anyone who proposes an answer to the query.
+  /// @param _refundRecipient Default address that will recieve any leftover
+  /// rewards at UMA query settlement time.
   /// @param _bondAmount The amount of `rewardToken` that must be staked by a
   /// user wanting to propose or dispute an answer to the query. See UMA's price
   /// dispute workflow for more information. It's recommended that the bond
@@ -85,6 +88,7 @@ contract UMATriggerFactory {
     string memory _query,
     IERC20 _rewardToken,
     uint256 _rewardAmount,
+    address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
     TriggerMetadata memory _metadata
@@ -93,6 +97,7 @@ contract UMATriggerFactory {
       _query,
       _rewardToken,
       _rewardAmount,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow
     );
@@ -103,6 +108,7 @@ contract UMATriggerFactory {
       _query,
       _rewardToken,
       _rewardAmount,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow,
       _triggerCount
@@ -115,6 +121,7 @@ contract UMATriggerFactory {
       oracleFinder,
       _query,
       _rewardToken,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow
     );
@@ -128,6 +135,7 @@ contract UMATriggerFactory {
       _query,
       address(_rewardToken),
       _rewardAmount,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow,
       _metadata.name,
@@ -143,6 +151,7 @@ contract UMATriggerFactory {
     string memory _query,
     IERC20 _rewardToken,
     uint256 _rewardAmount,
+    address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
     uint256 _triggerCount
@@ -152,6 +161,7 @@ contract UMATriggerFactory {
       oracleFinder,
       _query,
       _rewardToken,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow
     );
@@ -176,6 +186,7 @@ contract UMATriggerFactory {
     string memory _query,
     IERC20 _rewardToken,
     uint256 _rewardAmount,
+    address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
   ) public view returns(address) {
@@ -184,6 +195,7 @@ contract UMATriggerFactory {
       _query,
       _rewardToken,
       _rewardAmount,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow
     );
@@ -194,6 +206,7 @@ contract UMATriggerFactory {
         _query,
         _rewardToken,
         _rewardAmount,
+        _refundRecipient,
         _bondAmount,
         _proposalDisputeWindow,
         i
@@ -211,24 +224,33 @@ contract UMATriggerFactory {
   /// @notice Call this function to determine the identifier of the supplied
   /// trigger configuration. This identifier is used both to track the number of
   /// triggers deployed with this configuration (see `triggerCount`) and is
-  /// emitted at the time triggers with that configuration are deployed.
+  /// emitted as a part of the TriggerDeployed event when triggers are deployed.
+  /// @dev This function takes the rewardAmount as an input despite it not being
+  /// an argument of the UMATrigger constructor nor it being held in storage by
+  /// the trigger. This is done because the rewardAmount is something that
+  /// deployers could reasonably differ on. Deployer A might deploy a trigger
+  /// that is identical to what Deployer B wants in every way except the amount
+  /// of rewardToken that is being offered, and it would still be reasonable for
+  /// Deployer B to not want to re-use A's trigger for his own markets.
   function triggerConfigId(
     string memory _query,
     IERC20 _rewardToken,
     uint256 _rewardAmount,
+    address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
   ) public view returns (bytes32) {
-    bytes memory _triggerConstructorArgs = abi.encode(
+    bytes memory _triggerConfigData = abi.encode(
       manager,
       oracleFinder,
       _query,
       _rewardToken,
       _rewardAmount,
+      _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow
     );
-    return keccak256(_triggerConstructorArgs);
+    return keccak256(_triggerConfigData);
   }
 
   function _getSalt(
