@@ -62,9 +62,9 @@ contract DeployUMATrigger is Script {
 
     if (_availableTrigger == address(0)) {
 
-      // There is no available trigger that has your desired configuration. We will
-      // have to deploy a new one! First we approve the factory to transfer the
-      // reward for us.
+      // There is no available trigger that has your desired configuration. We
+      // will have to deploy a new one! First we approve the factory to transfer
+      // the reward for us.
       vm.broadcast();
       rewardToken.approve(address(factory), rewardAmount);
 
@@ -78,11 +78,9 @@ contract DeployUMATrigger is Script {
           refundRecipient,
           bondAmount,
           proposalDisputeWindow,
-          UMATriggerFactory.TriggerMetadata(
-            triggerName,
-            triggerDescription,
-            triggerLogoURI
-          )
+          triggerName,
+          triggerDescription,
+          triggerLogoURI
         )
       );
       console2.log("New trigger deployed!");

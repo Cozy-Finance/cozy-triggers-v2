@@ -48,20 +48,19 @@ contract UMATriggerFactory {
     string logoURI
   );
 
-  struct TriggerMetadata {
-    // The name that should be used for markets that use the trigger.
-    string name;
-    // A human-readable description of the trigger.
-    string description;
-    // The URI of a logo image to represent the trigger.
-    string logoURI;
-  }
-
   error TriggerAddressMismatch();
 
   constructor(IManager _manager, FinderInterface _oracleFinder) {
     manager = _manager;
     oracleFinder = _oracleFinder;
+  }
+
+  struct DeployTriggerVars {
+    bytes32 configId;
+    bytes32 salt;
+    uint256 triggerCount;
+    address triggerAddress;
+    UMATrigger trigger;
   }
 
   /// @notice Call this function to deploy a UMATrigger.
@@ -83,7 +82,9 @@ contract UMATriggerFactory {
   /// more information. It's recommended that the dispute window be fairly long
   /// (12-24 hours), given the difficulty of assessing expected queries (e.g.
   /// "Was protocol ABCD hacked") and the amount of funds potentially at stake.
-  /// @param _metadata See TriggerMetadata for more info.
+  /// @param _name The name that should be used for markets that use the trigger.
+  /// @param _description A human-readable description of the trigger.
+  /// @param _logoURI The URI of a logo image to represent the trigger.
   function deployTrigger(
     string memory _query,
     IERC20 _rewardToken,
@@ -91,9 +92,14 @@ contract UMATriggerFactory {
     address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
-    TriggerMetadata memory _metadata
-  ) external returns(UMATrigger _trigger) {
-    bytes32 _configId = triggerConfigId(
+    string memory _name,
+    string memory _description,
+    string memory _logoURI
+  ) external returns(UMATrigger) {
+    // We need to do this because of stack-too-deep errors; there are too many
+    // inputs/internal-vars to this function otherwise.
+    DeployTriggerVars memory _vars;
+    _vars.configId = triggerConfigId(
       _query,
       _rewardToken,
       _rewardAmount,
@@ -102,21 +108,26 @@ contract UMATriggerFactory {
       _proposalDisputeWindow
     );
 
-    uint256 _triggerCount = triggerCount[_configId]++;
+    _vars.triggerCount = triggerCount[_vars.configId]++;
+    _vars.salt = _getSalt(_vars.triggerCount, _rewardAmount);
 
-    address _triggerAddress = computeTriggerAddress(
+    _vars.triggerAddress = computeTriggerAddress(
       _query,
       _rewardToken,
       _rewardAmount,
       _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow,
-      _triggerCount
+      _vars.triggerCount
     );
 
-    _rewardToken.safeTransferFrom(msg.sender, _triggerAddress, _rewardAmount);
+    _rewardToken.safeTransferFrom(
+      msg.sender,
+      _vars.triggerAddress,
+      _rewardAmount
+    );
 
-    _trigger = new UMATrigger{salt: _getSalt(_triggerCount, _rewardAmount)}(
+    _vars.trigger = new UMATrigger{salt: _vars.salt}(
       manager,
       oracleFinder,
       _query,
@@ -126,11 +137,11 @@ contract UMATriggerFactory {
       _proposalDisputeWindow
     );
 
-    if (address(_trigger) != _triggerAddress) revert TriggerAddressMismatch();
+    if (address(_vars.trigger) != _vars.triggerAddress) revert TriggerAddressMismatch();
 
     emit TriggerDeployed(
-      address(_trigger),
-      _configId,
+      address(_vars.trigger),
+      _vars.configId,
       address(oracleFinder),
       _query,
       address(_rewardToken),
@@ -138,10 +149,12 @@ contract UMATriggerFactory {
       _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow,
-      _metadata.name,
-      _metadata.description,
-      _metadata.logoURI
+      _name,
+      _description,
+      _logoURI
     );
+
+    return _vars.trigger;
   }
 
   /// @notice Call this function to determine the address at which a trigger
