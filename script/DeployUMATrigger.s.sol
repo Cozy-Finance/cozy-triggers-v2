@@ -35,15 +35,18 @@ contract DeployUMATrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
+  // If a trigger has already been deployed with the desired configs, don't deploy a new ChainlinkTrigger if this is set to true.
+  bool useExistingTrigger = true;
+
   UMATriggerFactory factory = UMATriggerFactory(0x87A848fA89917988F4B9E4518CeBc82b9e998a4B);
 
-  string query = "q: title: Was there a Nomad Protocol hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Nomad protocol (https://app.nomad.xyz/) at any point after Ethereum Mainnet block number 15391430? This will revert if a non-YES answer is proposed.";
+  string query = "q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.";
 
   IERC20 rewardToken = IERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
 
   uint256 rewardAmount = 5e6;
 
-  address refundRecipient = address(0xBEEF);
+  address refundRecipient = address(0x682bd405073dD248527E40184898eD45BB827527);
 
   // It's recommended that the bond be at least twice as high as the reward.
   uint256 bondAmount = 10e6;
@@ -52,12 +55,12 @@ contract DeployUMATrigger is Script {
   uint256 proposalDisputeWindow = 2 days;
 
   // The name of the trigger, as it should appear within the Cozy interface.
-  string triggerName = "Nomad Protection";
+  string triggerName = "Uniswap v3 Protection";
 
   // A human-readable description of the intent of the trigger.
-  string triggerDescription = "General purpose protection against the Nomad protocol getting hacked.";
+  string triggerDescription = "Protects against general hacks and exploits on Uniswap v3. If something goes wrong, the UMA community can vote to trigger this market.";
 
-  string triggerLogoURI = "https://pbs.twimg.com/profile_images/1513895777709400070/AIiERUfX_400x400.png";
+  string triggerLogoURI = "https://cryptologos.cc/logos/uniswap-uni-logo.svg?w=64&q=100";
 
   // ---------------------------
   // -------- Execution --------
@@ -86,7 +89,7 @@ contract DeployUMATrigger is Script {
       proposalDisputeWindow
     );
 
-    if (_availableTrigger == address(0)) {
+    if (_availableTrigger == address(0) || !useExistingTrigger) {
 
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one! First we approve the factory to transfer
