@@ -35,7 +35,7 @@ contract DeployUMATrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  // If a trigger has already been deployed with the desired configs, don't deploy a new ChainlinkTrigger if this is set to true.
+  // If a trigger has already been deployed with the desired configs, don't deploy a new UMATrigger if this is set to true.
   bool useExistingTrigger = true;
 
   UMATriggerFactory factory = UMATriggerFactory(0x87A848fA89917988F4B9E4518CeBc82b9e998a4B);
