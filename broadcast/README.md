@@ -16,7 +16,7 @@ UMATriggerFactory deployed 0xB4Eb9D5c5b85165dB0dbB152708519ae38928154
   <summary>Metadata</summary>
 
   - Timestamp: 1661268240
-  - Parsed timestamp: 2022-08-22T16:37:43.000Z
+  - Parsed timestamp: 2022-08-23T15:24:00.000Z
   - Commit: e95350d8463372ddc40da25bc7c3cdebd2a53d15
 </details>
 <details>
@@ -69,6 +69,31 @@ UMATriggerFactory deployed 0xa48666D91Ac494A3CCA96A3A4357d998d8619387
 <br />
 
 ### Chainlink Triggers
+
+#### Trigger 2
+
+ChainlinkTrigger deployed 0xeB25dA3Eba8Bf2fad9C45108fb385F5B1681DD95
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1661270205
+  - Parsed timestamp: 2022-08-23T15:56:45.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - chainlinkTriggerFactory 0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864
+  - truthOracle 0x13e3Ee699D1909E989722E753853AE30b17e08c5 (ETH / USD)
+  - trackingOracle 0x41878779a388585509657CE5Fb95a80050502186 (stETH / USD)
+  - priceTolerance 5000
+  - truthFrequencyTolerance 1200
+  - trackingFrequencyTolerance 86400
+  - triggerName stETH Depeg Protection
+  - triggerDescription Protects against the de-pegging of stETH to ETH on Lido.
+  - triggerLogoURI https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png
+</details>
+<br />
 
 #### Trigger 1
 
