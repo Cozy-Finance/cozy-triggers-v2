@@ -36,6 +36,9 @@ contract DeployChainlinkPegTrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
+  // If a trigger has already been deployed with the desired configs, don't deploy a new ChainlinkTrigger if this is set to true.
+  bool useExistingTrigger = true;
+
   ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864);
 
   int256 pegPrice = 1e8;
@@ -86,7 +89,7 @@ contract DeployChainlinkPegTrigger is Script {
       frequencyTolerance
     );
 
-    if (_availableTrigger == address(0)) {
+    if (_availableTrigger == address(0) || !useExistingTrigger) {
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one!
       vm.broadcast();
