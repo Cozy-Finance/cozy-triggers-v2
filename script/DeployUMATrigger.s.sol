@@ -43,6 +43,8 @@ contract DeployUMATrigger is Script {
 
   uint256 rewardAmount = 5e6;
 
+  address refundRecipient = address(0xBEEF);
+
   // It's recommended that the bond be at least twice as high as the reward.
   uint256 bondAmount = 10e6;
 
@@ -67,6 +69,7 @@ contract DeployUMATrigger is Script {
     console2.log("    query", query);
     console2.log("    rewardToken", address(rewardToken));
     console2.log("    rewardAmount", rewardAmount);
+    console2.log("    refundRecipient", refundRecipient);
     console2.log("    bondAmount", bondAmount);
     console2.log("    proposalDisputeWindow", proposalDisputeWindow);
     console2.log("    triggerName", triggerName);
@@ -78,15 +81,16 @@ contract DeployUMATrigger is Script {
       query,
       rewardToken,
       rewardAmount,
+      refundRecipient,
       bondAmount,
       proposalDisputeWindow
     );
 
     if (_availableTrigger == address(0)) {
 
-      // There is no available trigger that has your desired configuration. We will
-      // have to deploy a new one! First we approve the factory to transfer the
-      // reward for us.
+      // There is no available trigger that has your desired configuration. We
+      // will have to deploy a new one! First we approve the factory to transfer
+      // the reward for us.
       vm.broadcast();
       rewardToken.approve(address(factory), rewardAmount);
 
@@ -97,13 +101,12 @@ contract DeployUMATrigger is Script {
           query,
           rewardToken,
           rewardAmount,
+          refundRecipient,
           bondAmount,
           proposalDisputeWindow,
-          UMATriggerFactory.TriggerMetadata(
-            triggerName,
-            triggerDescription,
-            triggerLogoURI
-          )
+          triggerName,
+          triggerDescription,
+          triggerLogoURI
         )
       );
       console2.log("New trigger deployed!");

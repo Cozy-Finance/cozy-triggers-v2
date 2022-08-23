@@ -92,9 +92,8 @@ contract UMATrigger is BaseTrigger {
   /// @notice The most recent timestamp that the query was submitted to the UMA oracle.
   uint256 public requestTimestamp;
 
-  /// @notice Whether or not this trigger will enter the TRIGGERED state the
-  /// next time `runProgrammaticCheck` is called.
-  bool public shouldTrigger;
+  /// @notice Default address that will receive any leftover rewards.
+  address public refundRecipient;
 
   /// @dev Thrown when a negative answer is proposed to the submitted query.
   error InvalidProposal();
@@ -111,12 +110,14 @@ contract UMATrigger is BaseTrigger {
     FinderInterface _oracleFinder,
     string memory _query,
     IERC20 _rewardToken,
+    address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
   ) BaseTrigger(_manager) {
     oracleFinder = _oracleFinder;
     query = _query;
     rewardToken = _rewardToken;
+    refundRecipient = _refundRecipient;
     bondAmount = _bondAmount;
     proposalDisputeWindow = _proposalDisputeWindow;
 
@@ -193,7 +194,7 @@ contract UMATrigger is BaseTrigger {
     // event related to the specific query we care about. It is possible, for
     // example, for multiple queries to be submitted to the oracle that differ
     // only with respect to timestamp. So we want to make sure we know which
-    // query the oracle has settled on an answer to.
+    // query the answer is for.
     if (
       msg.sender != address(_oracle) ||
       _timestamp != requestTimestamp ||
@@ -238,12 +239,14 @@ contract UMATrigger is BaseTrigger {
     ) revert Unauthorized();
 
     if (_answer == AFFIRMATIVE_ANSWER) {
-      shouldTrigger = true;
+      uint256 _rewardBalance = rewardToken.balanceOf(address(this));
+      if (_rewardBalance > 0) rewardToken.safeTransfer(refundRecipient, _rewardBalance);
+      _updateTriggerState(CState.TRIGGERED);
     } else {
       // If the answer was not affirmative, i.e. "Yes, the protocol was hacked",
-      // the trigger should return to the ACTIVE state. And we need to resubmit our
-      // query so that we are informed if the event we care about happens in the
-      // future.
+      // the trigger should return to the ACTIVE state. And we need to resubmit
+      // our query so that we are informed if the event we care about happens in
+      // the future.
       _updateTriggerState(CState.ACTIVE);
       _submitRequestToOracle(_oracle);
     }
@@ -269,7 +272,9 @@ contract UMATrigger is BaseTrigger {
       requestTimestamp,
       bytes(query)
     );
+
     if (!_oracleHasPrice) revert Unsettleable();
+
     OptimisticOracleV2Interface.Request memory _umaRequest = _oracle.getRequest(
       address(this),
       queryIdentifier,
@@ -277,6 +282,11 @@ contract UMATrigger is BaseTrigger {
       bytes(query)
     );
     if (!_umaRequest.settled) {
+      // Give the reward balance to the caller to make up for gas costs and
+      // incentivize keeping markets in line with trigger state.
+      refundRecipient = msg.sender;
+
+      // `settle` will cause the oracle to call the trigger's `priceSettled` function.
       _oracle.settle(
         address(this),
         queryIdentifier,
@@ -285,14 +295,8 @@ contract UMATrigger is BaseTrigger {
       );
     }
 
-    if (shouldTrigger) {
-      // Give the reward balance to the caller to make up for gas costs and
-      // incentivize keeping markets in line with trigger state.
-      uint256 _rewardBalance = rewardToken.balanceOf(address(this));
-      if (_rewardBalance > 0) rewardToken.safeTransfer(msg.sender, _rewardBalance);
-
-      return _updateTriggerState(CState.TRIGGERED);
-    }
+    // If the request settled as a result of this call, trigger.state will have
+    // been updated in the priceSettled callback.
     return state;
   }
 
