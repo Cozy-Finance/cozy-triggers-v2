@@ -99,6 +99,7 @@ contract UMATriggerFactory {
     // We need to do this because of stack-too-deep errors; there are too many
     // inputs/internal-vars to this function otherwise.
     DeployTriggerVars memory _vars;
+
     _vars.configId = triggerConfigId(
       _query,
       _rewardToken,

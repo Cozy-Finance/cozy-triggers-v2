@@ -286,6 +286,7 @@ contract UMATrigger is BaseTrigger {
       // incentivize keeping markets in line with trigger state.
       refundRecipient = msg.sender;
 
+      // `settle` will cause the oracle to call the trigger's `priceSettled` function.
       _oracle.settle(
         address(this),
         queryIdentifier,
