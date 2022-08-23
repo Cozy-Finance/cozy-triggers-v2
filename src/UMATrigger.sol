@@ -92,7 +92,7 @@ contract UMATrigger is BaseTrigger {
   /// @notice The most recent timestamp that the query was submitted to the UMA oracle.
   uint256 public requestTimestamp;
 
-  /// @notice Default address that will recieve any leftover rewards.
+  /// @notice Default address that will receive any leftover rewards.
   address public refundRecipient;
 
   /// @dev Thrown when a negative answer is proposed to the submitted query.
