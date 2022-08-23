@@ -8,6 +8,25 @@ Deploys are sorted by timestamp, with the most recent one first.
 
 ### Trigger Factories
 
+#### Deploy 3
+
+UMATriggerFactory deployed 0xB4Eb9D5c5b85165dB0dbB152708519ae38928154
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1661268240
+  - Parsed timestamp: 2022-08-22T16:37:43.000Z
+  - Commit: e95350d8463372ddc40da25bc7c3cdebd2a53d15
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - manager 0x1f513585D8bB1F994b37F2aaAB3F8499E52ca534
+  - umaOracleFinder 0x278d6b1aA37d09769E519f05FcC5923161A8536D
+</details>
+<br />
+
 #### Deploy 2
 
 ChainlinkTriggerFactory deployed 0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864
