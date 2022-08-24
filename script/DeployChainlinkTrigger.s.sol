@@ -35,9 +35,6 @@ contract DeployChainlinkTrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  // If a trigger has already been deployed with the desired configs, don't deploy a new ChainlinkTrigger if this is set to true.
-  bool useExistingTrigger = true;
-
   ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864);
 
   AggregatorV3Interface truthOracle = AggregatorV3Interface(0x13e3Ee699D1909E989722E753853AE30b17e08c5); // https://data.chain.link/optimism/mainnet/crypto-usd/eth-usd
@@ -80,7 +77,7 @@ contract DeployChainlinkTrigger is Script {
       trackingFrequencyTolerance
     );
 
-    if (_availableTrigger == address(0) || !useExistingTrigger) {
+    if (_availableTrigger == address(0)) {
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one!
       vm.broadcast();

@@ -35,9 +35,6 @@ contract DeployUMATrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  // If a trigger has already been deployed with the desired configs, don't deploy a new UMATrigger if this is set to true.
-  bool useExistingTrigger = true;
-
   UMATriggerFactory factory = UMATriggerFactory(0x87A848fA89917988F4B9E4518CeBc82b9e998a4B);
 
   string query = "q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.";
@@ -89,7 +86,7 @@ contract DeployUMATrigger is Script {
       proposalDisputeWindow
     );
 
-    if (_availableTrigger == address(0) || !useExistingTrigger) {
+    if (_availableTrigger == address(0)) {
 
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one! First we approve the factory to transfer
