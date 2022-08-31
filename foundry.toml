@@ -12,5 +12,5 @@ remappings = [
   "@openzeppelin/=lib/openzeppelin-contracts" # Needed for UMA protocol imports.
 ]
 
-[profile.ci.fuzz]
-runs = 1000
+[profile.default.fuzz]
+runs = 500
