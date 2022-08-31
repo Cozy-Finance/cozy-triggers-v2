@@ -12,6 +12,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup, ITriggerEvents {
     ISet[] memory _triggerSets = new ISet[](1);
     _triggerSets[0] = set;
     trigger = new MinimalTrigger(manager, _triggerSets);
+    trigger.TEST_HOOK_acknowledge(true);
   }
 
   function test_AddSetRevertsIfNotCalledFromManagerOrSet() public {
@@ -186,5 +187,29 @@ contract UpdateTriggerStateMultipleSetsTest is UpdateTriggerStateTest {
     sets.push(set);
     sets.push(set2);
     trigger = new MinimalTrigger(manager, sets);
+  }
+}
+
+contract TriggerAcknowledged is TriggerTestSetup {
+  MinimalTrigger trigger;
+
+  function setUp() public override {
+    super.setUp();
+    ISet[] memory _triggerSets = new ISet[](1);
+    _triggerSets[0] = set;
+    trigger = new MinimalTrigger(manager, _triggerSets);
+  }
+
+  function test_AddSetRevertsIfUnacknowledged() public {
+    vm.prank(address(manager));
+    vm.expectRevert(BaseTrigger.Unacknowledged.selector);
+    trigger.addSet(ISet(address(0xBEEF)));
+  }
+
+  function test_AddSetReturnsTrueIfAcknowledged() public {
+    trigger.TEST_HOOK_acknowledge(true);
+    vm.prank(address(manager));
+    bool success = trigger.addSet(ISet(address(0xBEEF)));
+    assertTrue(success);
   }
 }

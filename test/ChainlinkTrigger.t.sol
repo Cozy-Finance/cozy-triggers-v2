@@ -88,6 +88,19 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
     // the trigger into the triggered state.
     assertEq(trigger.state(), CState.TRIGGERED);
   }
+
+  function test_ConstructorAcknowledge() public {
+    IManager _manager = IManager(address(new MockManager()));
+    trigger = new MockChainlinkTrigger(
+      _manager,
+      truthOracle,
+      targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertTrue(trigger.acknowledged()); // Programmatic triggers should be automatically acknowledged in the constructor.
+  }
 }
 
 contract RunProgrammaticCheckTest is ChainlinkTriggerUnitTest {

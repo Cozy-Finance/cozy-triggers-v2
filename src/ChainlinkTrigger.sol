@@ -80,6 +80,12 @@ contract ChainlinkTrigger is BaseTrigger {
     return state;
   }
 
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @notice Chainlink triggers are programmatic, so this always returns true.
+  function acknowledged() public pure override returns (bool) {
+    return true;
+  }
+
   /// @dev Executes logic to programmatically determine if the trigger should be toggled.
   function programmaticCheck() internal view returns (bool) {
     uint256 _truePrice = _oraclePrice(truthOracle, truthFrequencyTolerance);

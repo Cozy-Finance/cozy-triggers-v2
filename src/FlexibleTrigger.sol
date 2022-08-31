@@ -86,6 +86,8 @@ contract FlexibleTrigger is BaseTrigger {
   /// If false, a programmatic check automatically flips state from ACTIVE to FROZEN.
   bool public isAutoTrigger;
 
+  bool internal isAcknowledged;
+
   /// @notice Addresses with permission to transition the trigger state from ACTIVE to FROZEN.
   mapping(address => bool) public freezers;
 
@@ -118,6 +120,17 @@ contract FlexibleTrigger is BaseTrigger {
       emit FreezerAdded(_freezers[i]);
       unchecked { i++; }
     }
+  }
+
+  function acknowledge() external {
+    if (msg.sender != boss) revert Unauthorized();
+    isAcknowledged = true;
+  }
+
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @dev This trigger has a boss role that can freeze and unfreeze the trigger, so it requires acknowledgement.
+  function acknowledged() public view override returns (bool) {
+    return isAcknowledged;
   }
 
   /// @notice Transitions the trigger state from ACTIVE to FROZEN.

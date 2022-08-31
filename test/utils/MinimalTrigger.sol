@@ -6,6 +6,8 @@ import "src/interfaces/IManager.sol";
 import "src/interfaces/ISet.sol";
 
 contract MinimalTrigger is BaseTrigger {
+  bool public testAcknowledged;
+
   constructor(IManager _manager, ISet[] memory _sets) BaseTrigger(_manager) {
     sets = _sets;
     state = CState.ACTIVE;
@@ -20,5 +22,13 @@ contract MinimalTrigger is BaseTrigger {
     CState _newState
   ) public returns(bool) {
     return _isValidTriggerStateTransition(_oldState, _newState);
+  }
+
+  function TEST_HOOK_acknowledge(bool _acknowledgement) public {
+    testAcknowledged = _acknowledgement;
+  }
+
+  function acknowledged() public view override returns (bool) {
+    return testAcknowledged;
   }
 }
