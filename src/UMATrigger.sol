@@ -123,7 +123,7 @@ contract UMATrigger is BaseTrigger {
     bondAmount = _bondAmount;
     proposalDisputeWindow = _proposalDisputeWindow;
 
-    _submitRequestToOracle();
+    _submitRequestToOracle(_oracle);
   }
 
   /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
@@ -172,10 +172,6 @@ contract UMATrigger is BaseTrigger {
       false, // Don't enable the answer-disputed callback.
       true   // Enable the answer-settled callback.
     );
-  }
-
-  function _submitRequestToOracle() internal {
-    _submitRequestToOracle(oracle);
   }
 
   /// @notice UMA callback for proposals. This function is called by the UMA
