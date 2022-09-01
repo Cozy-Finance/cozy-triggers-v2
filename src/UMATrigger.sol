@@ -15,13 +15,13 @@ import "src/lib/SafeTransferLib.sol";
  * @dev The high-level lifecycle of a UMA request is as follows:
  *   - someone asks a question of the oracle and provides a reward for someone
  *     to answer it
- *   - users of the UMA prediction market view the question (usually here:
+ *   - users of the UMA oracle system view the question (usually here:
  *     https://oracle.umaproject.org/)
  *   - someone proposes an answer to the question in hopes of claiming the
  *     reward`
  *   - users of UMA see the proposed answer and have a chance to dispute it
  *   - there is a finite period of time within which to dispute the answer
- *   - if the answer is not disputed during this period, the oracle finalizes
+ *   - if the answer is not disputed during this period, the oracle can finalize
  *     the answer and the proposer gets the reward
  *   - if the answer is disputed, the question is sent to the DVM (Data
  *     Verification Mechanism) in which UMA token holders vote on who is right
@@ -36,7 +36,7 @@ import "src/lib/SafeTransferLib.sol";
  * to them, then this contract will go into a TRIGGERED state and p-token
  * holders will be able to claim the protection that they purchased. For
  * example, if you wanted to create a market selling protection for Compound
- * yeild, you might deploy a UMATrigger with a query like "Was Compound hacked
+ * yield, you might deploy a UMATrigger with a query like "Was Compound hacked
  * after block X?" If the oracle responds with a "Yes" answer, this contract
  * would move the associated market into the TRIGGERED state and people who had
  * purchased protection from that market would get paid out.
@@ -105,6 +105,9 @@ contract UMATrigger is BaseTrigger {
   /// of 0.5 would be represented as 0.5e18.
   int256 internal constant AFFIRMATIVE_ANSWER = 1e18;
 
+  /// @dev The reward token must be approved by the UMA governance. Approved
+  /// tokens can be found with the UMA AddressWhitelist contract on each
+  /// chain supported by UMA.
   constructor(
     IManager _manager,
     FinderInterface _oracleFinder,
