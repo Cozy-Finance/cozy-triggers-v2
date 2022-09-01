@@ -124,6 +124,12 @@ contract UMATrigger is BaseTrigger {
     _submitRequestToOracle();
   }
 
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @notice UMA triggers are managed by the UMA decentralized voting system, so this always returns true.
+  function acknowledged() public pure override returns (bool) {
+    return true;
+  }
+
   /// @notice Submits the trigger query to the UMA Optimistic Oracle for evaluation.
   function _submitRequestToOracle(OptimisticOracleV2Interface _oracle) internal {
     uint256 _rewardAmount = rewardToken.balanceOf(address(this));

@@ -30,6 +30,9 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
   /// @dev Thrown when trying to add a set to the `sets` array when it's length is already at `MAX_SET_LENGTH`.
   error SetLimitReached();
 
+  /// @dev Thrown when trying to add a set to the `sets` array when the trigger has not been acknowledged.
+  error Unacknowledged();
+
   /// @dev Thrown when the caller is not authorized to perform the action.
   error Unauthorized();
 
@@ -37,6 +40,12 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
   constructor(IManager _manager) {
     manager = _manager;
   }
+
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @dev This must be implemented by contracts that inherit this contract. For manual triggers, after the trigger is deployed
+  /// this should initially return false, and instead return true once the entity responsible for transitioning trigger state
+  /// acknowledges the trigger. For programmatic triggers, this should always return true.
+  function acknowledged() public virtual returns (bool);
 
   /// @notice The Sets that use this trigger in a market.
   /// @dev Use this function to retrieve all Sets.
@@ -49,19 +58,21 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
     return sets.length;
   }
 
-  /// @dev Call this method to update Set addresses after deploy.
-  function addSet(ISet _set) external {
+  /// @dev Call this method to update Set addresses after deploy. Returns false if the trigger has not been acknowledged.
+  function addSet(ISet _set) external returns (bool) {
     if (msg.sender != address(manager)) revert Unauthorized();
+    if (!acknowledged()) revert Unacknowledged();
     (bool _exists,,,) = manager.sets(_set);
     if (!_exists) revert Unauthorized();
 
     uint256 setLength = sets.length;
     if (setLength >= MAX_SET_LENGTH) revert SetLimitReached();
     for (uint256 i = 0; i < setLength; i = uncheckedIncrement(i)) {
-      if (sets[i] == _set) return;
+      if (sets[i] == _set) return true;
     }
     sets.push(_set);
     emit SetAdded(_set);
+    return true;
   }
 
   /// @dev Child contracts should use this function to handle Trigger state transitions.

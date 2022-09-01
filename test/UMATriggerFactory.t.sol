@@ -119,6 +119,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     assertEq(_trigger.refundRecipient(), refundRecipient);
     assertEq(_trigger.bondAmount(), _bondAmount);
     assertEq(_trigger.proposalDisputeWindow(), _proposalDisputeWindow);
+    assertTrue(_trigger.acknowledged()); // Programmatic triggers should be automatically acknowledged in the constructor.
 
     // The finder now identifies the trigger we just deployed.
     assertEq(
