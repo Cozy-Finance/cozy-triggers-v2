@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.15;
 
-import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "uma-protocol/packages/core/contracts/oracle/interfaces/OptimisticOracleV2Interface.sol";
 import 'src/abstract/BaseTrigger.sol';
 import "src/lib/SafeTransferLib.sol";
@@ -59,8 +58,8 @@ contract UMATrigger is BaseTrigger {
   /// @notice The type of query that will be submitted to the oracle.
   bytes32 public constant queryIdentifier = bytes32("YES_OR_NO_QUERY");
 
-  /// @notice The UMA contract used to lookup the UMA Optimistic Oracle.
-  FinderInterface public immutable oracleFinder;
+  /// @notice The UMA Optimistic Oracle.
+  OptimisticOracleV2Interface public immutable oracle;
 
   /// @notice The identifier used to lookup the UMA Optimistic Oracle with the finder.
   bytes32 internal constant ORACLE_LOOKUP_IDENTIFIER = bytes32("OptimisticOracleV2");
@@ -110,14 +109,14 @@ contract UMATrigger is BaseTrigger {
   /// chain supported by UMA.
   constructor(
     IManager _manager,
-    FinderInterface _oracleFinder,
+    OptimisticOracleV2Interface _oracle,
     string memory _query,
     IERC20 _rewardToken,
     address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
   ) BaseTrigger(_manager) {
-    oracleFinder = _oracleFinder;
+    oracle = _oracle;
     query = _query;
     rewardToken = _rewardToken;
     refundRecipient = _refundRecipient;
@@ -176,7 +175,7 @@ contract UMATrigger is BaseTrigger {
   }
 
   function _submitRequestToOracle() internal {
-    _submitRequestToOracle(getOracle());
+    _submitRequestToOracle(oracle);
   }
 
   /// @notice UMA callback for proposals. This function is called by the UMA
@@ -196,7 +195,7 @@ contract UMATrigger is BaseTrigger {
     uint256 _timestamp,
     bytes memory _ancillaryData
   ) external {
-    OptimisticOracleV2Interface _oracle = getOracle();
+    OptimisticOracleV2Interface _oracle = oracle;
     // Besides confirming that the caller is the UMA oracle, we also confirm
     // that the args passed in match the args used to submit our latest query to
     // UMA. This is done as an extra safeguard that we are responding to an
@@ -237,7 +236,7 @@ contract UMATrigger is BaseTrigger {
     bytes memory _ancillaryData,
     int256 _answer
   ) external {
-    OptimisticOracleV2Interface _oracle = getOracle();
+    OptimisticOracleV2Interface _oracle = oracle;
 
     // See `priceProposed` for why we authorize callers in this way.
     if (
@@ -274,7 +273,7 @@ contract UMATrigger is BaseTrigger {
     // transaction's logs to know if the call resulted in a state change.
     if (state == CState.TRIGGERED) return state;
 
-    OptimisticOracleV2Interface _oracle = getOracle();
+    OptimisticOracleV2Interface _oracle = oracle;
     bool _oracleHasPrice = _oracle.hasPrice(
       address(this),
       queryIdentifier,
@@ -307,12 +306,5 @@ contract UMATrigger is BaseTrigger {
     // If the request settled as a result of this call, trigger.state will have
     // been updated in the priceSettled callback.
     return state;
-  }
-
-  /// @notice The UMA Optimistic Oracle queried by this trigger.
-  function getOracle() public view returns (OptimisticOracleV2Interface) {
-    return OptimisticOracleV2Interface(
-      oracleFinder.getImplementationAddress(ORACLE_LOOKUP_IDENTIFIER)
-    );
   }
 }

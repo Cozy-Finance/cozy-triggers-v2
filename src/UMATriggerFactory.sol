@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.15;
 
-import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "src/lib/SafeTransferLib.sol";
 import "src/UMATrigger.sol";
 
@@ -19,8 +18,8 @@ contract UMATriggerFactory {
   /// @notice The manager of the Cozy protocol.
   IManager public immutable manager;
 
-  /// @notice The UMA contract used to lookup the UMA Optimistic Oracle.
-  FinderInterface public immutable oracleFinder;
+  /// @notice The UMA Optimistic Oracle.
+  OptimisticOracleV2Interface public immutable oracle;
 
   /// @notice Maps the triggerConfigId to the number of triggers created with those configs.
   mapping(bytes32 => uint256) public triggerCount;
@@ -36,7 +35,7 @@ contract UMATriggerFactory {
   event TriggerDeployed(
     address trigger,
     bytes32 indexed triggerConfigId,
-    address indexed umaOracleFinder,
+    address indexed oracle,
     string query,
     address indexed rewardToken,
     uint256 rewardAmount,
@@ -50,9 +49,9 @@ contract UMATriggerFactory {
 
   error TriggerAddressMismatch();
 
-  constructor(IManager _manager, FinderInterface _oracleFinder) {
+  constructor(IManager _manager, OptimisticOracleV2Interface _oracle) {
     manager = _manager;
-    oracleFinder = _oracleFinder;
+    oracle = _oracle;
   }
 
   struct DeployTriggerVars {
@@ -130,7 +129,7 @@ contract UMATriggerFactory {
 
     _vars.trigger = new UMATrigger{salt: _vars.salt}(
       manager,
-      oracleFinder,
+      oracle,
       _query,
       _rewardToken,
       _refundRecipient,
@@ -143,7 +142,7 @@ contract UMATriggerFactory {
     emit TriggerDeployed(
       address(_vars.trigger),
       _vars.configId,
-      address(oracleFinder),
+      address(oracle),
       _query,
       address(_rewardToken),
       _rewardAmount,
@@ -172,7 +171,7 @@ contract UMATriggerFactory {
   ) public view returns(address _address) {
     bytes memory _triggerConstructorArgs = abi.encode(
       manager,
-      oracleFinder,
+      oracle,
       _query,
       _rewardToken,
       _refundRecipient,
@@ -256,7 +255,7 @@ contract UMATriggerFactory {
   ) public view returns (bytes32) {
     bytes memory _triggerConfigData = abi.encode(
       manager,
-      oracleFinder,
+      oracle,
       _query,
       _rewardToken,
       _rewardAmount,
