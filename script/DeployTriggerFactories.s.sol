@@ -42,7 +42,7 @@ contract DeployTriggerFactories is Script {
 
   // -------- UMA Trigger Factory --------
 
-  // Using te UMA oracle finder on Optimism (https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json),
+  // Using the UMA oracle finder on Optimism (https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json),
   // you can obtain the OptimisticOracleV2 contract with Finder.getImplementationAddress(bytes32("OptimisticOracleV2")).
   OptimisticOracleV2Interface umaOracle = OptimisticOracleV2Interface(0x255483434aba5a75dc60c1391bB162BCd9DE2882);
 
