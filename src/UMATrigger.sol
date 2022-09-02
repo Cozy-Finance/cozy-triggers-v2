@@ -140,7 +140,7 @@ contract UMATrigger is BaseTrigger {
     bondAmount = _bondAmount;
     proposalDisputeWindow = _proposalDisputeWindow;
 
-    _submitRequestToOracle(_oracle);
+    _submitRequestToOracle();
   }
 
   /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
@@ -150,15 +150,15 @@ contract UMATrigger is BaseTrigger {
   }
 
   /// @notice Submits the trigger query to the UMA Optimistic Oracle for evaluation.
-  function _submitRequestToOracle(OptimisticOracleV2Interface _oracle) internal {
+  function _submitRequestToOracle() internal {
     uint256 _rewardAmount = rewardToken.balanceOf(address(this));
-    rewardToken.approve(address(_oracle), _rewardAmount);
+    rewardToken.approve(address(oracle), _rewardAmount);
     requestTimestamp = block.timestamp;
 
     // The UMA function for submitting a query to the oracle is `requestPrice`
     // even though not all queries are price queries. Another name for this
     // function might have been `requestAnswer`.
-    _oracle.requestPrice(
+    oracle.requestPrice(
       queryIdentifier,
       requestTimestamp,
       bytes(query),
@@ -169,19 +169,19 @@ contract UMATrigger is BaseTrigger {
     // Set this as an event-based query so that no one can propose the "too
     // soon" answer and so that we automatically get the reward back if there
     // is a dispute. This allows us to re-query the oracle for ~free.
-    _oracle.setEventBased(queryIdentifier, requestTimestamp, bytes(query));
+    oracle.setEventBased(queryIdentifier, requestTimestamp, bytes(query));
 
     // Set the amount of rewardTokens that have to be staked in order to answer
     // the query or dispute an answer to the query.
-    _oracle.setBond(queryIdentifier, requestTimestamp, bytes(query), bondAmount);
+    oracle.setBond(queryIdentifier, requestTimestamp, bytes(query), bondAmount);
 
     // Set the proposal dispute window -- i.e. how long people have to challenge
     // and answer to the query.
-    _oracle.setCustomLiveness(queryIdentifier, requestTimestamp, bytes(query), proposalDisputeWindow);
+    oracle.setCustomLiveness(queryIdentifier, requestTimestamp, bytes(query), proposalDisputeWindow);
 
     // We want to be notified by the UMA oracle when answers and proposed and
     // when answers are confirmed/settled.
-    _oracle.setCallbacks(
+    oracle.setCallbacks(
       queryIdentifier,
       requestTimestamp,
       bytes(query),
@@ -208,7 +208,6 @@ contract UMATrigger is BaseTrigger {
     uint256 _timestamp,
     bytes memory _ancillaryData
   ) external {
-    OptimisticOracleV2Interface _oracle = oracle;
     // Besides confirming that the caller is the UMA oracle, we also confirm
     // that the args passed in match the args used to submit our latest query to
     // UMA. This is done as an extra safeguard that we are responding to an
@@ -217,14 +216,14 @@ contract UMATrigger is BaseTrigger {
     // only with respect to timestamp. So we want to make sure we know which
     // query the answer is for.
     if (
-      msg.sender != address(_oracle) ||
+      msg.sender != address(oracle) ||
       _timestamp != requestTimestamp ||
       keccak256(_ancillaryData) != keccak256(bytes(query)) ||
       _identifier != queryIdentifier
     ) revert Unauthorized();
 
     OptimisticOracleV2Interface.Request memory _umaRequest;
-    _umaRequest = _oracle.getRequest(address(this), _identifier, _timestamp, _ancillaryData);
+    _umaRequest = oracle.getRequest(address(this), _identifier, _timestamp, _ancillaryData);
 
     // Revert if the answer was anything other than "YES". We don't want to be told
     // that a hack/exploit has *not* happened yet, or it cannot be determined, etc.
@@ -249,11 +248,10 @@ contract UMATrigger is BaseTrigger {
     bytes memory _ancillaryData,
     int256 _answer
   ) external {
-    OptimisticOracleV2Interface _oracle = oracle;
 
     // See `priceProposed` for why we authorize callers in this way.
     if (
-      msg.sender != address(_oracle) ||
+      msg.sender != address(oracle) ||
       _timestamp != requestTimestamp ||
       keccak256(_ancillaryData) != keccak256(bytes(query)) ||
       _identifier != queryIdentifier
@@ -269,7 +267,7 @@ contract UMATrigger is BaseTrigger {
       // our query so that we are informed if the event we care about happens in
       // the future.
       _updateTriggerState(CState.ACTIVE);
-      _submitRequestToOracle(_oracle);
+      _submitRequestToOracle();
     }
   }
 
@@ -286,8 +284,7 @@ contract UMATrigger is BaseTrigger {
     // transaction's logs to know if the call resulted in a state change.
     if (state == CState.TRIGGERED) return state;
 
-    OptimisticOracleV2Interface _oracle = oracle;
-    bool _oracleHasPrice = _oracle.hasPrice(
+    bool _oracleHasPrice = oracle.hasPrice(
       address(this),
       queryIdentifier,
       requestTimestamp,
@@ -296,7 +293,7 @@ contract UMATrigger is BaseTrigger {
 
     if (!_oracleHasPrice) revert Unsettleable();
 
-    OptimisticOracleV2Interface.Request memory _umaRequest = _oracle.getRequest(
+    OptimisticOracleV2Interface.Request memory _umaRequest = oracle.getRequest(
       address(this),
       queryIdentifier,
       requestTimestamp,
@@ -308,7 +305,7 @@ contract UMATrigger is BaseTrigger {
       refundRecipient = msg.sender;
 
       // `settle` will cause the oracle to call the trigger's `priceSettled` function.
-      _oracle.settle(
+      oracle.settle(
         address(this),
         queryIdentifier,
         requestTimestamp,
