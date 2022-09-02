@@ -66,7 +66,9 @@ contract UMATriggerFactory {
   /// @param _query The query that the trigger will send to the UMA Optimistic
   /// Oracle for evaluation.
   /// @param _rewardToken The token used to pay the reward to users that propose
-  /// answers to the query.
+  /// answers to the query. The reward token must be approved by UMA governance.
+  /// Approved tokens can be found with the UMA AddressWhitelist contract on each
+  /// chain supported by UMA.
   /// @param _rewardAmount The amount of rewardToken that will be paid as a
   /// reward to anyone who proposes an answer to the query.
   /// @param _refundRecipient Default address that will recieve any leftover

@@ -104,9 +104,26 @@ contract UMATrigger is BaseTrigger {
   /// of 0.5 would be represented as 0.5e18.
   int256 internal constant AFFIRMATIVE_ANSWER = 1e18;
 
-  /// @dev The reward token must be approved by the UMA governance. Approved
-  /// tokens can be found with the UMA AddressWhitelist contract on each
+  /// @param _manager The Cozy protocol Manager.
+  /// @param _oracle The UMA Optimistic Oracle.
+  /// @param _query The query that the trigger will send to the UMA Optimistic
+  /// Oracle for evaluation.
+  /// @param _rewardToken The token used to pay the reward to users that propose
+  /// answers to the query. The reward token must be approved by UMA governance.
+  /// Approved tokens can be found with the UMA AddressWhitelist contract on each
   /// chain supported by UMA.
+  /// @param _refundRecipient Default address that will recieve any leftover
+  /// rewards at UMA query settlement time.
+  /// @param _bondAmount The amount of `rewardToken` that must be staked by a
+  /// user wanting to propose or dispute an answer to the query. See UMA's price
+  /// dispute workflow for more information. It's recommended that the bond
+  /// amount be a significant value to deter addresses from proposing malicious,
+  /// false, or otherwise self-interested answers to the query.
+  /// @param _proposalDisputeWindow The window of time in seconds within which a
+  /// proposed answer may be disputed. See UMA's "customLiveness" setting for
+  /// more information. It's recommended that the dispute window be fairly long
+  /// (12-24 hours), given the difficulty of assessing expected queries (e.g.
+  /// "Was protocol ABCD hacked") and the amount of funds potentially at stake.
   constructor(
     IManager _manager,
     OptimisticOracleV2Interface _oracle,
