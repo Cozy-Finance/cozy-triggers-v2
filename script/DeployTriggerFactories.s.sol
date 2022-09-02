@@ -2,6 +2,7 @@
 pragma solidity 0.8.15;
 
 import "forge-std/Script.sol";
+import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "src/ChainlinkTriggerFactory.sol";
 import "src/UMATriggerFactory.sol";
 
@@ -58,11 +59,15 @@ contract DeployTriggerFactories is Script {
 
     console2.log("====================");
 
+    OptimisticOracleV2Interface _umaOracle = OptimisticOracleV2Interface(
+      umaOracleFinder.getImplementationAddress(bytes32("OptimisticOracleV2"))
+    );
+
     console2.log("Deploying UMATriggerFactory...");
     console2.log("    manager", address(manager));
-    console2.log("    umaOracleFinder", address(umaOracleFinder));
+    console2.log("    umaOracle", address(_umaOracle));
     vm.broadcast();
-    factory = address(new UMATriggerFactory(manager, umaOracleFinder));
+    factory = address(new UMATriggerFactory(manager, _umaOracle));
     console2.log("UMATriggerFactory deployed", factory);
 
     console2.log("====================");

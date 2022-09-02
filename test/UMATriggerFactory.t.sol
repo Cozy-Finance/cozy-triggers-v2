@@ -23,7 +23,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
   event TriggerDeployed(
     address trigger,
     bytes32 indexed triggerConfigId,
-    address indexed umaOracleFinder,
+    address indexed umaOracle,
     string query,
     address indexed rewardToken,
     uint256 rewardAmount,
@@ -84,7 +84,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
         _bondAmount,
         _proposalDisputeWindow
       ),
-      address(umaOracleFinder),
+      address(umaOracle),
       "Has Terra been hacked?",
       address(rewardToken),
       _rewardAmount,
@@ -112,8 +112,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     assertEq(_trigger.state(), CState.ACTIVE);
     assertEq(_trigger.getSets().length, 0);
     assertEq(_trigger.manager(), factory.manager());
-    assertEq(address(_trigger.oracleFinder()), address(factory.oracleFinder()));
-    assertEq(address(_trigger.getOracle()), address(umaOracle));
+    assertEq(address(_trigger.oracle()), address(umaOracle));
     assertEq(_trigger.query(), "Has Terra been hacked?");
     assertEq(address(_trigger.rewardToken()), address(rewardToken));
     assertEq(_trigger.refundRecipient(), refundRecipient);
@@ -627,7 +626,7 @@ contract DeployTriggerMainnetTest is DeployTriggerSharedTest {
     umaOracle = OptimisticOracleV2Interface(0xA0Ae6609447e57a42c51B50EAe921D701823FFAe);
     rewardToken = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); // USDC on mainnet,
 
-    factory = new UMATriggerFactory(manager, FinderInterface(umaOracleFinder));
+    factory = new UMATriggerFactory(manager, umaOracle);
   }
 
   function testFork1_DeployTriggerDeploysANewTrigger() public {
@@ -667,7 +666,7 @@ contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
     umaOracle = OptimisticOracleV2Interface(0x255483434aba5a75dc60c1391bB162BCd9DE2882);
     rewardToken = IERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607); // USDC on Optimism.
 
-    factory = new UMATriggerFactory(manager, FinderInterface(umaOracleFinder));
+    factory = new UMATriggerFactory(manager, umaOracle);
   }
 
   function testFork10_DeployTriggerDeploysANewTrigger() public {
