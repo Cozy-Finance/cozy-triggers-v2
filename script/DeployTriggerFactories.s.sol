@@ -2,6 +2,7 @@
 pragma solidity 0.8.15;
 
 import "forge-std/Script.sol";
+import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "src/ChainlinkTriggerFactory.sol";
 import "src/UMATriggerFactory.sol";
 
@@ -42,9 +43,8 @@ contract DeployTriggerFactories is Script {
 
   // -------- UMA Trigger Factory --------
 
-  // Using the UMA oracle finder on Optimism (https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json),
-  // you can obtain the OptimisticOracleV2 contract with Finder.getImplementationAddress(bytes32("OptimisticOracleV2")).
-  OptimisticOracleV2Interface umaOracle = OptimisticOracleV2Interface(0x255483434aba5a75dc60c1391bB162BCd9DE2882);
+  // The UMA oracle finder on Optimism https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json
+  FinderInterface umaOracleFinder = FinderInterface(0x278d6b1aA37d09769E519f05FcC5923161A8536D);
 
   // ---------------------------
   // -------- Execution --------
@@ -59,11 +59,15 @@ contract DeployTriggerFactories is Script {
 
     console2.log("====================");
 
+    OptimisticOracleV2Interface _umaOracle = OptimisticOracleV2Interface(
+      umaOracleFinder.getImplementationAddress(bytes32("OptimisticOracleV2"))
+    );
+
     console2.log("Deploying UMATriggerFactory...");
     console2.log("    manager", address(manager));
-    console2.log("    umaOracle", address(umaOracle));
+    console2.log("    umaOracle", address(_umaOracle));
     vm.broadcast();
-    factory = address(new UMATriggerFactory(manager, umaOracle));
+    factory = address(new UMATriggerFactory(manager, _umaOracle));
     console2.log("UMATriggerFactory deployed", factory);
 
     console2.log("====================");
