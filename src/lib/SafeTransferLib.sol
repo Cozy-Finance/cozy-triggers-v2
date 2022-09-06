@@ -1,13 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.15;
 
-import "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
+// A named import is used to avoid identifier naming conflicts between IERC20 imports. solc throws a DeclarationError
+// if an interface with the same name is imported twice in a file using different paths, even if they have the
+// same implementation. For example, if a file in the cozy-v2-interfaces submodule that is imported in this project
+// imports an IERC20 interface with "import src/interfaces/IERC20.sol;", but in this project we import the same
+// interface with "import cozy-v2-interfaces/interfaces/IERC20.sol;", a DeclarationError will be thrown.
+import { IERC20 as CozyIERC20 } from "cozy-v2-interfaces/interfaces/IERC20.sol";
 
 /// @notice Safe ETH and ERC20 transfer library that gracefully handles missing return values.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/d155ee8d58f96426f57c015b34dee8a410c1eacc/src/utils/SafeTransferLib.sol)
 /// @dev Use with caution! Some functions in this library knowingly create dirty bits at the destination of the free memory pointer.
 /// @dev Note that none of the functions in this library check that a token has code at all! That responsibility is delegated to the caller.
-/// @dev Note that this version of solmate's SafeTransferLib uses our own IERC20 interface instead of solmate's ERC20.
+/// @dev Note that this version of solmate's SafeTransferLib uses our own IERC20 interface instead of solmate's ERC20. Cozy's ERC20 was modified
+/// from solmate to use an initializer to support usage as a minimal proxy.
 library SafeTransferLib {
   // --------------------------------
   // -------- ETH OPERATIONS --------
@@ -29,7 +35,7 @@ library SafeTransferLib {
   // ----------------------------------
 
   function safeTransferFrom(
-    IERC20 token,
+    CozyIERC20 token,
     address from,
     address to,
     uint256 amount
@@ -62,7 +68,7 @@ library SafeTransferLib {
   }
 
   function safeTransfer(
-    IERC20 token,
+    CozyIERC20 token,
     address to,
     uint256 amount
   ) internal {
@@ -93,7 +99,7 @@ library SafeTransferLib {
   }
 
   function safeApprove(
-    IERC20 token,
+    CozyIERC20 token,
     address to,
     uint256 amount
   ) internal {

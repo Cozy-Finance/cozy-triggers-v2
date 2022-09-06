@@ -39,7 +39,7 @@ contract DeployUMATrigger is Script {
 
   string query = "q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.";
 
-  IERC20 rewardToken = IERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
+  CozyIERC20 rewardToken = CozyIERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607);
 
   uint256 rewardAmount = 5e6;
 

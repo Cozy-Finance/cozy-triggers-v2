@@ -97,7 +97,7 @@ contract DeployChainlinkPegTrigger is Script {
           trackingOracle,
           priceTolerance,
           frequencyTolerance,
-          ChainlinkTriggerFactory.TriggerMetadata(
+          IChainlinkTriggerFactory.TriggerMetadata(
             triggerName,
             triggerDescription,
             triggerLogoURI

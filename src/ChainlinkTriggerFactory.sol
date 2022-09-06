@@ -2,9 +2,8 @@
 pragma solidity 0.8.15;
 
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "cozy-v2-interfaces/interfaces/IChainlinkTriggerFactory.sol";
 
-import "src/interfaces/IChainlinkTriggerFactoryEvents.sol";
-import "src/interfaces/IManager.sol";
 import "src/ChainlinkTrigger.sol";
 import "src/FixedPriceAggregator.sol";
 
@@ -13,7 +12,7 @@ import "src/FixedPriceAggregator.sol";
  * tolerance. It also supports creating a fixed price oracle to use as the truth oracle, useful
  * for e.g. ensuring stablecoins maintain their peg.
  */
-contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
+contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
   /// @notice The manager of the Cozy protocol.
   IManager public immutable manager;
 
@@ -28,15 +27,6 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
   //   (d) it saves gas.
   // This is just the 32 bytes you get when you keccak256(abi.encode(42)).
   bytes32 internal constant FIXED_PRICE_ORACLE_SALT = 0xbeced09521047d05b8960b7e7bcc1d1292cf3e4b2a6b63f48335cbde5f7545d2;
-
-  struct TriggerMetadata {
-    // The name that should be used for markets that use the trigger.
-    string name;
-    // A human-readable description of the trigger.
-    string description;
-    // The URI of a logo image to represent the trigger.
-    string logoURI;
-  }
 
   /// @param _manager Address of the Cozy protocol manager.
   constructor(IManager _manager) {
@@ -63,7 +53,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance,
     TriggerMetadata memory _metadata
-  ) public returns (ChainlinkTrigger _trigger) {
+  ) public returns (IChainlinkTrigger _trigger) {
     if (_truthOracle.decimals() != _trackingOracle.decimals()) revert InvalidOraclePair();
 
     bytes32 _configId = triggerConfigId(
@@ -77,14 +67,14 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
     uint256 _triggerCount = triggerCount[_configId]++;
     bytes32 _salt = keccak256(abi.encode(_triggerCount, block.chainid));
 
-    _trigger = new ChainlinkTrigger{salt: _salt}(
+    _trigger = IChainlinkTrigger(address(new ChainlinkTrigger{salt: _salt}(
       manager,
       _truthOracle,
       _trackingOracle,
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance
-    );
+    )));
 
     emit TriggerDeployed(
       address(_trigger),
@@ -120,7 +110,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactoryEvents {
     uint256 _priceTolerance,
     uint256 _frequencyTolerance,
     TriggerMetadata memory _metadata
-  ) public returns (ChainlinkTrigger _trigger) {
+  ) public returns (IChainlinkTrigger _trigger) {
     AggregatorV3Interface _truthOracle = deployFixedPriceAggregator(_price, _decimals);
 
     return deployTrigger(

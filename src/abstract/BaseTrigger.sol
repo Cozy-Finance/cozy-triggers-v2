@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.15;
 
-import "src/interfaces/IBaseTrigger.sol";
-import "src/interfaces/ICState.sol";
-import "src/interfaces/IManager.sol";
-import "src/interfaces/ISet.sol";
+import "cozy-v2-interfaces/interfaces/IBaseTrigger.sol";
 
 /**
  * @dev Core trigger interface and implementation. All triggers should inherit from this to ensure they conform

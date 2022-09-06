@@ -3,11 +3,7 @@ pragma solidity 0.8.15;
 
 import "forge-std/Test.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-
-import "src/interfaces/IConfig.sol";
-import "src/interfaces/IManager.sol";
-import "src/interfaces/ITrigger.sol";
+import "cozy-v2-interfaces/interfaces/IBaseTrigger.sol";
 
 contract TriggerTestSetup is Test, IConfig, ICState {
   using stdStorage for StdStorage;
@@ -23,6 +19,12 @@ contract TriggerTestSetup is Test, IConfig, ICState {
   ICostModel costModel;
   IERC20 asset;
   SetConfig setConfig;
+
+  /// @dev Emitted when a new set is added to the trigger's list of sets.
+  event SetAdded(ISet set);
+
+  /// @dev Emitted when a trigger's state is updated.
+  event TriggerStateUpdated(CState indexed state);
 
   function setUp() public virtual {
     // Create addresses.
