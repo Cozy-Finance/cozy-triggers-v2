@@ -35,7 +35,7 @@ contract DeployUMATrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  UMATriggerFactory factory = UMATriggerFactory(0x87A848fA89917988F4B9E4518CeBc82b9e998a4B);
+  UMATriggerFactory factory = UMATriggerFactory(0x4b6a9Df80aFe203bf5b6FE246d098BCE373a3F6E);
 
   string query = "q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.";
 
