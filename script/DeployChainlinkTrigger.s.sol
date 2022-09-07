@@ -35,7 +35,7 @@ contract DeployChainlinkTrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864);
+  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0x52acaC2C49CCEC6BE4A762811C62A1208248db33);
 
   AggregatorV3Interface truthOracle = AggregatorV3Interface(0x13e3Ee699D1909E989722E753853AE30b17e08c5); // https://data.chain.link/optimism/mainnet/crypto-usd/eth-usd
   AggregatorV3Interface trackingOracle = AggregatorV3Interface(0x41878779a388585509657CE5Fb95a80050502186); // https://data.chain.link/optimism/mainnet/crypto-usd/steth-usd
