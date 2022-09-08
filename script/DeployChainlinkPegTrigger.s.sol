@@ -36,7 +36,7 @@ contract DeployChainlinkPegTrigger is Script {
   // -------- Configuration --------
   // -------------------------------
 
-  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0xCd5a264CC34dAc1CB44Afcd41D8dA357fF37B864);
+  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0x52acaC2C49CCEC6BE4A762811C62A1208248db33);
 
   int256 pegPrice = 1e8;
   uint8 decimals = 8;
