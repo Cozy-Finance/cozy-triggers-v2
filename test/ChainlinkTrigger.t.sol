@@ -2,10 +2,6 @@
 pragma solidity 0.8.15;
 
 import "src/ChainlinkTrigger.sol";
-import "src/interfaces/ICState.sol";
-import "src/interfaces/IManager.sol";
-import "src/interfaces/ISet.sol";
-
 import "test/utils/TriggerTestSetup.sol";
 import "test/utils/MockChainlinkOracle.sol";
 

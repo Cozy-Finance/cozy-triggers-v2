@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.15;
 
-import "uma-protocol/packages/core/contracts/oracle/interfaces/OptimisticOracleV2Interface.sol";
 import 'src/abstract/BaseTrigger.sol';
+import "src/interfaces/OptimisticOracleV2Interface.sol";
 import "src/lib/SafeTransferLib.sol";
 
 /**
@@ -53,7 +53,7 @@ import "src/lib/SafeTransferLib.sol";
  * with happens the trigger will immediately be notified.
  */
 contract UMATrigger is BaseTrigger {
-  using SafeTransferLib for IERC20;
+  using SafeTransferLib for CozyIERC20;
 
   /// @notice The type of query that will be submitted to the oracle.
   bytes32 public constant queryIdentifier = bytes32("YES_OR_NO_QUERY");
@@ -72,7 +72,7 @@ contract UMATrigger is BaseTrigger {
   string public query;
 
   /// @notice The token used to pay the reward to users that propose answers to the query.
-  IERC20 public immutable rewardToken;
+  CozyIERC20 public immutable rewardToken;
 
   /// @notice The amount of `rewardToken` that must be staked by a user wanting
   /// to propose or dispute an answer to the query. See UMA's price dispute
@@ -128,7 +128,7 @@ contract UMATrigger is BaseTrigger {
     IManager _manager,
     OptimisticOracleV2Interface _oracle,
     string memory _query,
-    IERC20 _rewardToken,
+    CozyIERC20 _rewardToken,
     address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow

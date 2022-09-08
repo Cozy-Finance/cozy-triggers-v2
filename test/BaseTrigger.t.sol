@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 import "test/utils/MinimalTrigger.sol";
 import "test/utils/TriggerTestSetup.sol";
 
-contract BaseTriggerCoreTest is TriggerTestSetup, ITriggerEvents {
+contract BaseTriggerCoreTest is TriggerTestSetup {
   MinimalTrigger trigger;
 
   function setUp() public override {
@@ -127,7 +127,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup, ITriggerEvents {
   }
 }
 
-abstract contract UpdateTriggerStateTest is TriggerTestSetup, ITriggerEvents {
+abstract contract UpdateTriggerStateTest is TriggerTestSetup {
   MinimalTrigger trigger;
   ISet[] sets;
 

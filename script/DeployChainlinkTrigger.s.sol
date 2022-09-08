@@ -88,7 +88,7 @@ contract DeployChainlinkTrigger is Script {
           priceTolerance,
           truthFrequencyTolerance,
           trackingFrequencyTolerance,
-          ChainlinkTriggerFactory.TriggerMetadata(
+          IChainlinkTriggerFactory.TriggerMetadata(
             triggerName,
             triggerDescription,
             triggerLogoURI

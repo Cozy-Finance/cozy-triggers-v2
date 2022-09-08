@@ -13,7 +13,7 @@ import "src/UMATrigger.sol";
  * to the UMA oracle.
  */
 contract UMATriggerFactory {
-  using SafeTransferLib for IERC20;
+  using SafeTransferLib for CozyIERC20;
 
   /// @notice The manager of the Cozy protocol.
   IManager public immutable manager;
@@ -88,7 +88,7 @@ contract UMATriggerFactory {
   /// @param _logoURI The URI of a logo image to represent the trigger.
   function deployTrigger(
     string memory _query,
-    IERC20 _rewardToken,
+    CozyIERC20 _rewardToken,
     uint256 _rewardAmount,
     address _refundRecipient,
     uint256 _bondAmount,
@@ -164,7 +164,7 @@ contract UMATriggerFactory {
   /// more information on parameters and their meaning.
   function computeTriggerAddress(
     string memory _query,
-    IERC20 _rewardToken,
+    CozyIERC20 _rewardToken,
     uint256 _rewardAmount,
     address _refundRecipient,
     uint256 _bondAmount,
@@ -199,7 +199,7 @@ contract UMATriggerFactory {
   /// `deployTrigger` for more information on parameters and their meaning.
   function findAvailableTrigger(
     string memory _query,
-    IERC20 _rewardToken,
+    CozyIERC20 _rewardToken,
     uint256 _rewardAmount,
     address _refundRecipient,
     uint256 _bondAmount,
@@ -249,7 +249,7 @@ contract UMATriggerFactory {
   /// Deployer B to not want to re-use A's trigger for his own markets.
   function triggerConfigId(
     string memory _query,
-    IERC20 _rewardToken,
+    CozyIERC20 _rewardToken,
     uint256 _rewardAmount,
     address _refundRecipient,
     uint256 _bondAmount,

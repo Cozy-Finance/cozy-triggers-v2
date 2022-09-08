@@ -2,10 +2,6 @@
 pragma solidity 0.8.15;
 
 import "src/ChainlinkTriggerFactory.sol";
-import "src/interfaces/IChainlinkTriggerFactoryEvents.sol";
-import "src/interfaces/ICState.sol";
-import "src/interfaces/IManager.sol";
-
 import "test/utils/TriggerTestSetup.sol";
 import "test/utils/MockChainlinkOracle.sol";
 
@@ -20,7 +16,7 @@ contract MockManager is ICState {
   function updateMarketState(ISet /* set */, CState /* newMarketState */) external {}
 }
 
-contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup, IChainlinkTriggerFactoryEvents {
+contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
   address constant ethUsdOracleMainnet    = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; //   ETH / USD on mainnet
   address constant stEthUsdOracleMainnet  = 0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8; // stETH / USD on mainnet
   address constant usdcUsdOracleMainnet   = 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6; //  USDC / USD on mainnet
@@ -33,6 +29,19 @@ contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup, IChainlinkTri
 
   ChainlinkTriggerFactory factory;
 
+  event TriggerDeployed(
+    address trigger,
+    bytes32 indexed triggerConfigId,
+    address indexed truthOracle,
+    address indexed trackingOracle,
+    uint256 priceTolerance,
+    uint256 truthFrequencyTolerance,
+    uint256 trackingFrequencyTolerance,
+    string name,
+    string description,
+    string logoURI
+  );
+
   function setUp() public virtual override {
     super.setUp();
     manager = IManager(address(new MockManager()));
@@ -40,7 +49,7 @@ contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup, IChainlinkTri
     vm.makePersistent(address(manager), address(factory));
   }
 
-  function _addMaxSetsToTrigger(ChainlinkTrigger _trigger) internal {
+  function _addMaxSetsToTrigger(IChainlinkTrigger _trigger) internal {
     uint256 _maxSetCount = _trigger.MAX_SET_LENGTH();
     vm.startPrank(address(manager));
     for(uint256 i = 0; i < _maxSetCount; i++) {
@@ -64,8 +73,6 @@ contract ChainlinkTriggerFactoryTestSetup is ChainlinkTriggerFactoryTestBaseSetu
 contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
   uint256 mainnetForkId;
   uint256 optimismForkId;
-
-  event TriggerStateUpdated(CState indexed state);
 
   function setUp() public override {
     super.setUp();
@@ -95,7 +102,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
       0.1e4, // priceTolerance.
       45, // truthFrequencyTolerance.
       45, // trackingFrequencyTolerance
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -124,7 +131,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
     uint256 _truthFrequencyTolerance = 24 hours;
     uint256 _trackingFrequencyTolerance = 25 hours;
 
-    ChainlinkTrigger _trigger;
+    IChainlinkTrigger _trigger;
     if (_pegPrice == 0 && _pegDecimals == 0) {
       // We are NOT deploying a peg trigger.
       _trigger = factory.deployTrigger(
@@ -133,7 +140,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         _priceTolerance,
         _truthFrequencyTolerance,
         _trackingFrequencyTolerance,
-        ChainlinkTriggerFactory.TriggerMetadata(
+        IChainlinkTriggerFactory.TriggerMetadata(
           "Chainlink Trigger",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
@@ -148,7 +155,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         AggregatorV3Interface(_trackingOracle),
         _priceTolerance,
         _trackingFrequencyTolerance,
-        ChainlinkTriggerFactory.TriggerMetadata(
+        IChainlinkTriggerFactory.TriggerMetadata(
           "Peg Protection Trigger",
           "A trigger that protects from something depegging",
           "https://via.placeholder.com/150"
@@ -216,13 +223,13 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
-    ChainlinkTrigger _trigger = factory.deployTrigger(
+    IChainlinkTrigger _trigger = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -279,7 +286,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -302,13 +309,13 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
 
     assertEq(factory.triggerCount(_triggerConfigId), 0);
 
-    ChainlinkTrigger _triggerA = factory.deployTrigger(
+    IChainlinkTrigger _triggerA = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -317,13 +324,13 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
 
     assertEq(factory.triggerCount(_triggerConfigId), 1);
 
-    ChainlinkTrigger _triggerB = factory.deployTrigger(
+    IChainlinkTrigger _triggerB = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -332,7 +339,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
 
     assertEq(factory.triggerCount(_triggerConfigId), 2);
 
-    assertNotEq(_triggerA, _triggerB);
+    assertNotEq(address(_triggerA), address(_triggerB));
   }
 
   function testFuzz_DeployTriggerDeploysToDifferentAddressesOnDifferentChains(
@@ -344,13 +351,13 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance = 42;
     uint256 _trackingFrequencyTolerance = 43;
 
-    ChainlinkTrigger _triggerA = factory.deployTrigger(
+    IChainlinkTrigger _triggerA = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -359,13 +366,13 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
 
     vm.chainId(_chainId);
 
-    ChainlinkTrigger _triggerB = factory.deployTrigger(
+    IChainlinkTrigger _triggerB = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -391,13 +398,13 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       0 // This is the first trigger of its kind.
     );
 
-    ChainlinkTrigger _trigger = factory.deployTrigger(
+    IChainlinkTrigger _trigger = factory.deployTrigger(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -480,7 +487,7 @@ contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -510,15 +517,15 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
     // This test is really slow (10+ seconds) without reasonable bounds.
     _triggersToDeploy = uint8(bound(_triggersToDeploy, 0, 10));
 
-    ChainlinkTrigger _initTrigger;
+    IChainlinkTrigger _initTrigger;
     for (uint256 i = 0; i < _triggersToDeploy; i++) {
-      ChainlinkTrigger _trigger = factory.deployTrigger(
+      IChainlinkTrigger _trigger = factory.deployTrigger(
         AggregatorV3Interface(ethUsdOracleMainnet),
         AggregatorV3Interface(stEthUsdOracleMainnet),
         _priceTolerance,
         _truthFrequencyTolerance,
         _trackingFrequencyTolerance,
-        ChainlinkTriggerFactory.TriggerMetadata(
+        IChainlinkTriggerFactory.TriggerMetadata(
           "Chainlink Trigger",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
@@ -548,7 +555,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
     // This test is really slow (10+ seconds) without reasonable bounds.
     _triggersToDeploy = uint8(bound(_triggersToDeploy, 0, 10));
 
-    ChainlinkTrigger _trigger;
+    IChainlinkTrigger _trigger;
     for (uint256 i = 0; i < _triggersToDeploy; i++) {
       _trigger = factory.deployTrigger(
         AggregatorV3Interface(stEthUsdOracleMainnet),
@@ -556,7 +563,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         _priceTolerance,
         _truthFrequencyTolerance,
         _trackingFrequencyTolerance,
-        ChainlinkTriggerFactory.TriggerMetadata(
+        IChainlinkTriggerFactory.TriggerMetadata(
           "Chainlink Trigger",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
@@ -579,13 +586,13 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
 
 contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
   function test_DeployTriggerDeploysFixedPriceAggregator() public {
-    ChainlinkTrigger _trigger = factory.deployTrigger(
+    IChainlinkTrigger _trigger = factory.deployTrigger(
       1e8, // Fixed price.
       8, // Decimals.
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.001e4, // 0.1% price tolerance.
       60, // 60s frequency tolerance.
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -607,26 +614,26 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
   }
 
   function test_DeployTriggerIdempotency() public {
-    ChainlinkTrigger _triggerA = factory.deployTrigger(
+    IChainlinkTrigger _triggerA = factory.deployTrigger(
       1e8, // Fixed price.
       8, // Decimals.
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.001e4, // 0.1% price tolerance.
       60, // 60s frequency tolerance.
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
       )
     );
 
-    ChainlinkTrigger _triggerB = factory.deployTrigger(
+    IChainlinkTrigger _triggerB = factory.deployTrigger(
       1e8, // Fixed price.
       8, // Decimals.
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.042e4, // 4.2% price tolerance.
       360, // 360s frequency tolerance.
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -636,13 +643,13 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_triggerA.truthOracle(), _triggerB.truthOracle());
 
     // Deploy a new trigger with a different peg.
-    ChainlinkTrigger _triggerC = factory.deployTrigger(
+    IChainlinkTrigger _triggerC = factory.deployTrigger(
       1e18, // Fixed price.
       8, // Decimals.
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.042e4, // 4.2% price tolerance.
       360, // 360s frequency tolerance.
-      ChainlinkTriggerFactory.TriggerMetadata(
+      IChainlinkTriggerFactory.TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"

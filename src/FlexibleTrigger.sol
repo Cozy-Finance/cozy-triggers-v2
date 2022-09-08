@@ -2,8 +2,6 @@
 pragma solidity 0.8.15;
 
 import "src/abstract/BaseTrigger.sol";
-import "src/interfaces/IManager.sol";
-import "src/interfaces/ISet.sol";
 
 /**
  * @notice A trigger template offering various possible implementations.

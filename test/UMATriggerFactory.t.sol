@@ -10,7 +10,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
   uint256 forkId;
   address umaOracleFinder;
   OptimisticOracleV2Interface umaOracle;
-  IERC20 rewardToken;
+  CozyIERC20 rewardToken;
   address refundRecipient;
 
   int256 constant AFFIRMATIVE_ANSWER = 1e18;
@@ -624,7 +624,7 @@ contract DeployTriggerMainnetTest is DeployTriggerSharedTest {
     // https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/1.json
     umaOracleFinder = 0x40f941E48A552bF496B154Af6bf55725f18D77c3;
     umaOracle = OptimisticOracleV2Interface(0xA0Ae6609447e57a42c51B50EAe921D701823FFAe);
-    rewardToken = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); // USDC on mainnet,
+    rewardToken = CozyIERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); // USDC on mainnet,
 
     factory = new UMATriggerFactory(manager, umaOracle);
   }
@@ -664,7 +664,7 @@ contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
     // https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json
     umaOracleFinder = 0x278d6b1aA37d09769E519f05FcC5923161A8536D;
     umaOracle = OptimisticOracleV2Interface(0x255483434aba5a75dc60c1391bB162BCd9DE2882);
-    rewardToken = IERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607); // USDC on Optimism.
+    rewardToken = CozyIERC20(0x7F5c764cBc14f9669B88837ca1490cCa17c31607); // USDC on Optimism.
 
     factory = new UMATriggerFactory(manager, umaOracle);
   }

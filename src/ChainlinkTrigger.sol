@@ -5,7 +5,6 @@ import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "solmate/utils/FixedPointMathLib.sol";
 
 import "src/abstract/BaseTrigger.sol";
-import "src/interfaces/IManager.sol";
 
 /**
  * @notice A trigger contract that takes two addresses: a truth oracle and a tracking oracle.
