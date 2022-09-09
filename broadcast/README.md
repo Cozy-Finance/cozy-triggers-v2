@@ -275,7 +275,7 @@ UMATrigger deployed 0x1b2987da4e34C0e34dfECd8D6Ef7f8f0aAAe5f49
 <details>
   <summary>Configuration</summary>
 
-  - umaTriggerFactory 0x4b6a9Df80aFe203bf5b6FE246d098BCE373a3F6E
+  - umaTriggerFactory 0xa9aac1c32d182Df034b35435Eef5861a427F097D
   - query q: title: Is it September 13 2022 in New York City?, description: Is it September 13 2022 in New York City? This will revert if a non-YES answer is proposed.
   - rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
   - rewardAmount 5000000
