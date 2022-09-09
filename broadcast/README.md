@@ -8,6 +8,27 @@ Deploys are sorted by timestamp, with the most recent one first.
 
 ### Trigger Factories
 
+#### Deploy 5
+
+ChainlinkTriggerFactory deployed 0xe1e132Dc16A5eDFe60671a2128122a81Aa19970C
+
+UMATriggerFactory deployed 0xa9aac1c32d182Df034b35435Eef5861a427F097D
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662576669
+  - Parsed timestamp: 2022-09-09T18:26:50.000Z
+  - Commit: 575194a2bed346a1c5455a859ad7d514c509adbc
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - manager 0x91d82e1172A70cF8cac704ae5E3Dd4327FdadD58
+  - umaOracle 0x255483434aba5a75dc60c1391bB162BCd9DE2882
+</details>
+<br />
+
 #### Deploy 4
 
 ChainlinkTriggerFactory deployed 0x52acaC2C49CCEC6BE4A762811C62A1208248db33
@@ -90,6 +111,31 @@ UMATriggerFactory deployed 0xa48666D91Ac494A3CCA96A3A4357d998d8619387
 <br />
 
 ### Chainlink Triggers
+
+#### Trigger 4
+
+ChainlinkTrigger deployed 0x24Cb8DE4f381b06D66C7607bF1d080D89442fda2
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662750743
+  - Parsed timestamp: 2022-09-09T19:12:23.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - chainlinkTriggerFactory 0xe1e132Dc16A5eDFe60671a2128122a81Aa19970C
+  - truthOracle 0x13e3Ee699D1909E989722E753853AE30b17e08c5
+  - trackingOracle 0x41878779a388585509657CE5Fb95a80050502186
+  - priceTolerance 5000
+  - truthFrequencyTolerance 1200
+  - trackingFrequencyTolerance 86400
+  - triggerName stETH Depeg Protection
+  - triggerDescription Protects against the de-pegging of stETH to ETH on Lido.
+  - triggerLogoURI https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png
+</details>
+<br />
 
 #### Trigger 3
 
@@ -215,6 +261,136 @@ ChainlinkTrigger deployed 0x5b0E6cD94854558aa2E0b0bc7aDD36b2147bFC13
 <br />
 
 ### UMA Triggers
+
+#### Trigger 21
+
+UMATrigger deployed 0x1b2987da4e34C0e34dfECd8D6Ef7f8f0aAAe5f49
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662750553
+  - Parsed timestamp: 2022-09-09T19:09:13.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - umaTriggerFactory 0x4b6a9Df80aFe203bf5b6FE246d098BCE373a3F6E
+  - query q: title: Is it September 13 2022 in New York City?, description: Is it September 13 2022 in New York City? This will revert if a non-YES answer is proposed.
+  - rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
+  - rewardAmount 5000000
+  - refundRecipient 0x682bd405073dD248527E40184898eD45BB827527
+  - bondAmount 10000000
+  - proposalDisputeWindow 172800
+  - triggerName Mock UMA Trigger
+  - triggerDescription This is a mock UMA trigger market.
+  - triggerLogoURI https://cryptologos.cc/logos/uma-uma-logo.png?v=023
+</details>
+<br />
+
+#### Trigger 20
+
+UMATrigger deployed 0x27F495Ce3a1Af8B647eC58834ff4354f5dc357d0
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662750341
+  - Parsed timestamp: 2022-09-09T19:05:41.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - umaTriggerFactory 0xa9aac1c32d182Df034b35435Eef5861a427F097D
+  - query q: title: Was there a Hop bridge hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Hop bridge (https://hop.exchange/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.
+  - rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
+  - rewardAmount 5000000
+  - refundRecipient 0x682bd405073dD248527E40184898eD45BB827527
+  - bondAmount 10000000
+  - proposalDisputeWindow 172800
+  - triggerName Hop Bridge Protection
+  - triggerDescription Bridges can be dangerous and this trigger protects against general hacks and exploits for the Hop bridge. If something goes wrong, the UMA community can vote to trigger this market.
+  - triggerLogoURI https://dev-cozy-ui-v2.vercel.app/images/platforms/hop.jpeg?w=64&q=100
+</details>
+<br />
+
+#### Trigger 19
+
+UMATrigger deployed 0x37136e49dBF24D11F6d42cAB89784B9092f934C9
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662750090
+  - Parsed timestamp: 2022-09-09T19:01:30.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - umaTriggerFactory 0xa9aac1c32d182Df034b35435Eef5861a427F097D
+  - query q: title: Was there a Curve 3pool hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Curve 3pool (https://curve.fi/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.
+  - rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
+  - rewardAmount 5000000
+  - refundRecipient 0x682bd405073dD248527E40184898eD45BB827527
+  - bondAmount 10000000
+  - proposalDisputeWindow 172800
+  - triggerName Curve 3pool Protection
+  - triggerDescription Protects against general hacks and exploits on the Curve 3pool. If something goes wrong, the UMA community can vote to trigger this market.
+  - triggerLogoURI https://cryptologos.cc/logos/curve-dao-token-crv-logo.png?w=64&q=100
+</details>
+<br />
+
+#### Trigger 18
+
+UMATrigger deployed 0x0C22d6e2C242a37bBc4dFcbF50704DcD3FD5162e
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662578120
+  - Parsed timestamp: 2022-09-09T18:55:23.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - umaTriggerFactory 0xa9aac1c32d182Df034b35435Eef5861a427F097D
+  - query q: title: Was there an Aave v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Aave v3 (https://aave.com/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.
+  - rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
+  - rewardAmount 5000000
+  - refundRecipient 0x682bd405073dD248527E40184898eD45BB827527
+  - bondAmount 10000000
+  - proposalDisputeWindow 172800
+  - triggerName Aave v3 Protection
+  - triggerDescription Protects against general hacks and exploits on Aave v3. If something goes wrong, the UMA community can vote to trigger this market.
+  - triggerLogoURI https://cryptologos.cc/logos/aave-aave-logo.png?w=64&q=100
+</details>
+<br />
+
+#### Trigger 17
+
+UMATrigger deployed 0x737330fC2ac9b8E62ccD7A182d785914C4e88FB7
+
+<details>
+  <summary>Metadata</summary>
+
+  - Timestamp: 1662578120
+  - Parsed timestamp: 2022-09-09T18:48:23.000Z
+</details>
+<details>
+  <summary>Configuration</summary>
+
+  - umaTriggerFactory 0xa9aac1c32d182Df034b35435Eef5861a427F097D
+  - query q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.
+  - rewardToken 0x7F5c764cBc14f9669B88837ca1490cCa17c31607
+  - rewardAmount 5000000
+  - refundRecipient 0x682bd405073dD248527E40184898eD45BB827527
+  - bondAmount 10000000
+  - proposalDisputeWindow 172800
+  - triggerName Uniswap v3 Protection
+  - triggerDescription Protects against general hacks and exploits on Uniswap v3. If something goes wrong, the UMA community can vote to trigger this market.
+  - triggerLogoURI https://cryptologos.cc/logos/uniswap-uni-logo.svg?w=64&q=100
+</details>
+<br />
 
 #### Trigger 16
 
