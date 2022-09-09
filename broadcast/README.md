@@ -17,7 +17,7 @@ UMATriggerFactory deployed 0xa9aac1c32d182Df034b35435Eef5861a427F097D
 <details>
   <summary>Metadata</summary>
 
-  - Timestamp: 1662576669
+  - Timestamp: 1662748010
   - Parsed timestamp: 2022-09-09T18:26:50.000Z
   - Commit: 575194a2bed346a1c5455a859ad7d514c509adbc
 </details>
