@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "cozy-v2-interfaces/interfaces/IBaseTrigger.sol";
 
-contract TriggerTestSetup is Test, IConfig, ICState {
+contract TriggerTestSetup is Test, ICState {
   using stdStorage for StdStorage;
 
   bytes32 constant salt = bytes32(uint256(1234)); // Arbitrary default salt value.

@@ -76,7 +76,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     uint256 _maxSetCount = trigger.MAX_SET_LENGTH();
 
      MarketInfo[] memory _marketInfoSingleMarket = new MarketInfo[](1);
-     _marketInfoSingleMarket[0] = MarketInfo(address(trigger), address(costModel), 10000, 0);
+     _marketInfoSingleMarket[0] = MarketInfo(address(trigger), costModel, 10000, 0);
 
     for(uint256 i; i < _maxSetCount - 1 ; i++) { // Minus 1 because there is already one ISet.
       address _newSet = makeAddr(string.concat("set", vm.toString(i))); // e.g. "set1" is the label.
