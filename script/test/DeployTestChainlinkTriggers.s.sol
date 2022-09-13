@@ -124,7 +124,7 @@ contract DeployTestChainlinkTriggers is Script {
     } else {
       // A trigger exactly like the one you wanted already exists!
       // Since triggers can be re-used, there's no need to deploy a new one.
-      console2.log("Found existing trigger with specified configs.");
+      console2.log("Found existing trigger with specified configs.", _availableTrigger);
     }
     console2.log("========");
   }
