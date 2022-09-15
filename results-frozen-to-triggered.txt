@@ -1,0 +1,199 @@
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest13
+[PASS] test_Benchmark13() (gas: 53939)
+Test result: ok. 1 passed; 0 failed; finished in 5.86ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest1
+[PASS] test_Benchmark1() (gas: 19930)
+Test result: ok. 1 passed; 0 failed; finished in 1.87ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest7
+[PASS] test_Benchmark7() (gas: 36934)
+Test result: ok. 1 passed; 0 failed; finished in 5.77ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest29
+[PASS] test_Benchmark29() (gas: 99304)
+Test result: ok. 1 passed; 0 failed; finished in 1.86ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest21
+[PASS] test_Benchmark21() (gas: 76588)
+Test result: ok. 1 passed; 0 failed; finished in 2.67ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest37
+[PASS] test_Benchmark37() (gas: 121932)
+Test result: ok. 1 passed; 0 failed; finished in 1.03ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest44
+[PASS] test_Benchmark44() (gas: 141793)
+Test result: ok. 1 passed; 0 failed; finished in 1.15ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest11
+[PASS] test_Benchmark11() (gas: 48248)
+Test result: ok. 1 passed; 0 failed; finished in 874.71µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest45
+[PASS] test_Benchmark45() (gas: 144627)
+Test result: ok. 1 passed; 0 failed; finished in 1.41ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest3
+[PASS] test_Benchmark3() (gas: 25598)
+Test result: ok. 1 passed; 0 failed; finished in 1.87ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest22
+[PASS] test_Benchmark22() (gas: 79423)
+Test result: ok. 1 passed; 0 failed; finished in 2.17ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest14
+[PASS] test_Benchmark14() (gas: 56773)
+Test result: ok. 1 passed; 0 failed; finished in 865.25µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest10
+[PASS] test_Benchmark10() (gas: 45414)
+Test result: ok. 1 passed; 0 failed; finished in 882.21µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest8
+[PASS] test_Benchmark8() (gas: 39768)
+Test result: ok. 1 passed; 0 failed; finished in 3.00ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest38
+[PASS] test_Benchmark38() (gas: 124833)
+Test result: ok. 1 passed; 0 failed; finished in 2.08ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest12
+[PASS] test_Benchmark12() (gas: 51149)
+Test result: ok. 1 passed; 0 failed; finished in 1.97ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest15
+[PASS] test_Benchmark15() (gas: 59584)
+Test result: ok. 1 passed; 0 failed; finished in 991.08µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest23
+[PASS] test_Benchmark23() (gas: 82323)
+Test result: ok. 1 passed; 0 failed; finished in 972.42µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest46
+[PASS] test_Benchmark46() (gas: 147505)
+Test result: ok. 1 passed; 0 failed; finished in 2.04ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest30
+[PASS] test_Benchmark30() (gas: 102116)
+Test result: ok. 1 passed; 0 failed; finished in 949.92µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest48
+[PASS] test_Benchmark48() (gas: 153173)
+Test result: ok. 1 passed; 0 failed; finished in 1.74ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest40
+[PASS] test_Benchmark40() (gas: 130457)
+Test result: ok. 1 passed; 0 failed; finished in 1.15ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest9
+[PASS] test_Benchmark9() (gas: 42580)
+Test result: ok. 1 passed; 0 failed; finished in 2.78ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest39
+[PASS] test_Benchmark39() (gas: 127622)
+Test result: ok. 1 passed; 0 failed; finished in 2.92ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest31
+[PASS] test_Benchmark31() (gas: 104951)
+Test result: ok. 1 passed; 0 failed; finished in 1.01ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest24
+[PASS] test_Benchmark24() (gas: 85090)
+Test result: ok. 1 passed; 0 failed; finished in 2.55ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest47
+[PASS] test_Benchmark47() (gas: 150295)
+Test result: ok. 1 passed; 0 failed; finished in 1.95ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest16
+[PASS] test_Benchmark16() (gas: 62418)
+Test result: ok. 1 passed; 0 failed; finished in 887.04µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest41
+[PASS] test_Benchmark41() (gas: 133290)
+Test result: ok. 1 passed; 0 failed; finished in 2.99ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest5
+[PASS] test_Benchmark5() (gas: 31267)
+Test result: ok. 1 passed; 0 failed; finished in 1.38ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest49
+[PASS] test_Benchmark49() (gas: 155962)
+Test result: ok. 1 passed; 0 failed; finished in 1.13ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest4
+[PASS] test_Benchmark4() (gas: 28432)
+Test result: ok. 1 passed; 0 failed; finished in 2.57ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest32
+[PASS] test_Benchmark32() (gas: 107785)
+Test result: ok. 1 passed; 0 failed; finished in 1.10ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest42
+[PASS] test_Benchmark42() (gas: 136169)
+Test result: ok. 1 passed; 0 failed; finished in 1.59ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest25
+[PASS] test_Benchmark25() (gas: 87946)
+Test result: ok. 1 passed; 0 failed; finished in 1.75ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest34
+[PASS] test_Benchmark34() (gas: 113452)
+Test result: ok. 1 passed; 0 failed; finished in 1.25ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest17
+[PASS] test_Benchmark17() (gas: 65319)
+Test result: ok. 1 passed; 0 failed; finished in 1.14ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest50
+[PASS] test_Benchmark50() (gas: 158797)
+Test result: ok. 1 passed; 0 failed; finished in 3.14ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest27
+[PASS] test_Benchmark27() (gas: 93592)
+Test result: ok. 1 passed; 0 failed; finished in 1.03ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest33
+[PASS] test_Benchmark33() (gas: 110597)
+Test result: ok. 1 passed; 0 failed; finished in 985.13µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest43
+[PASS] test_Benchmark43() (gas: 138936)
+Test result: ok. 1 passed; 0 failed; finished in 1.10ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest19
+[PASS] test_Benchmark19() (gas: 70987)
+Test result: ok. 1 passed; 0 failed; finished in 1.06ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest26
+[PASS] test_Benchmark26() (gas: 90758)
+Test result: ok. 1 passed; 0 failed; finished in 2.60ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest35
+[PASS] test_Benchmark35() (gas: 116264)
+Test result: ok. 1 passed; 0 failed; finished in 2.28ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest18
+[PASS] test_Benchmark18() (gas: 68130)
+Test result: ok. 1 passed; 0 failed; finished in 883.67µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest6
+[PASS] test_Benchmark6() (gas: 34100)
+Test result: ok. 1 passed; 0 failed; finished in 810.83µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest28
+[PASS] test_Benchmark28() (gas: 96493)
+Test result: ok. 1 passed; 0 failed; finished in 1.11ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest2
+[PASS] test_Benchmark2() (gas: 22765)
+Test result: ok. 1 passed; 0 failed; finished in 773.54µs
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest36
+[PASS] test_Benchmark36() (gas: 119098)
+Test result: ok. 1 passed; 0 failed; finished in 1.06ms
+
+Running 1 test for test/BenchmarkMaxSets.t.sol:MaxSetsBenchmarkTest20
+[PASS] test_Benchmark20() (gas: 73776)
+Test result: ok. 1 passed; 0 failed; finished in 1.04ms
