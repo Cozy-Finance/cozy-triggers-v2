@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.15;
 
-import "forge-std/Script.sol";
+import "script/ScriptUtils.s.sol";
 import "src/UMATriggerFactory.sol";
 
 /**
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys UMA triggers for testing using an UMATriggerFactory.
+  * The private key of an EOA that will be used for transactions in this script must be set in .env.
   *
   * To run this script:
   *
@@ -16,21 +17,20 @@ import "src/UMATriggerFactory.sol";
   * anvil --fork-url $OPTIMISM_RPC_URL
   *
   * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployTestUMATriggers.s.sol \
+  * forge script script/test/DeployTestUMATriggers.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   -vvvv
   *
   * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployTestUMATriggers.s.sol \
+  * forge script script/test/DeployTestUMATriggers.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
   *   --verify \
   *   --broadcast \
   *   -vvvv
   * ```
  */
-contract DeployTestUMATriggers is Script {
+contract DeployTestUMATriggers is ScriptUtils {
   struct UMAMetadata {
     // The query submitted to the UMA Optimistic Oracle
     string query;
@@ -97,6 +97,8 @@ contract DeployTestUMATriggers is Script {
     // -------- Execution --------
     // ---------------------------
 
+    super.loadDeployerKey();
+
     for (uint i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);
     }
@@ -130,11 +132,11 @@ contract DeployTestUMATriggers is Script {
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one! First we approve the factory to transfer
       // the reward for us.
-      vm.broadcast();
+      vm.broadcast(privateKey);
       rewardToken.approve(address(factory), rewardAmount);
 
       // Then we deploy the trigger.
-      vm.broadcast();
+      vm.broadcast(privateKey);
       _availableTrigger = address(
         factory.deployTrigger(
           _metadata.query,

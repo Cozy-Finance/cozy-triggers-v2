@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.15;
 
-import "forge-std/Script.sol";
+import "script/ScriptUtils.s.sol";
 import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "src/ChainlinkTriggerFactory.sol";
 import "src/UMATriggerFactory.sol";
@@ -10,6 +10,7 @@ import "src/UMATriggerFactory.sol";
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys Cozy trigger factories.
+  * The private key of an EOA that will be used for transactions in this script must be set in .env.
   *
   * To run this script:
   *
@@ -25,14 +26,13 @@ import "src/UMATriggerFactory.sol";
   * # Or, to broadcast transactions with etherscan verification.
   * forge script script/DeployTriggerFactories.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
   *   --verify \
   *   --broadcast \
   *   -vvvv
   * ```
  */
-contract DeployTriggerFactories is Script {
+contract DeployTriggerFactories is ScriptUtils {
   // -------------------------------
   // -------- Configuration --------
   // -------------------------------
@@ -51,9 +51,11 @@ contract DeployTriggerFactories is Script {
   // ---------------------------
 
   function run() public {
+    super.loadDeployerKey();
+
     console2.log("Deploying ChainlinkTriggerFactory...");
     console2.log("    manager", address(manager));
-    vm.broadcast();
+    vm.broadcast(privateKey);
     address factory = address(new ChainlinkTriggerFactory(manager));
     console2.log("ChainlinkTriggerFactory deployed", factory);
 
@@ -66,7 +68,7 @@ contract DeployTriggerFactories is Script {
     console2.log("Deploying UMATriggerFactory...");
     console2.log("    manager", address(manager));
     console2.log("    umaOracle", address(_umaOracle));
-    vm.broadcast();
+    vm.broadcast(privateKey);
     factory = address(new UMATriggerFactory(manager, _umaOracle));
     console2.log("UMATriggerFactory deployed", factory);
 

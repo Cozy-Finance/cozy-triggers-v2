@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.15;
 
-import "forge-std/Script.sol";
+import "script/ScriptUtils.s.sol";
 import "src/UMATriggerFactory.sol";
 
 /**
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys an UMA trigger using an UMATriggerFactory.
+  * The private key of an EOA that will be used for transactions in this script must be set in .env.
   *
   * To run this script:
   *
@@ -23,14 +24,13 @@ import "src/UMATriggerFactory.sol";
   * # Or, to broadcast transactions with etherscan verification.
   * forge script script/DeployUMATrigger.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
   *   --verify \
   *   --broadcast \
   *   -vvvv
   * ```
  */
-contract DeployUMATrigger is Script {
+contract DeployUMATrigger is ScriptUtils {
   // -------------------------------
   // -------- Configuration --------
   // -------------------------------
@@ -64,6 +64,8 @@ contract DeployUMATrigger is Script {
   // ---------------------------
 
   function run() public {
+    super.loadDeployerKey();
+
     console2.log("Deploying UMATrigger...");
     console2.log("    umaTriggerFactory", address(factory));
     console2.log("    query", query);
@@ -91,11 +93,11 @@ contract DeployUMATrigger is Script {
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one! First we approve the factory to transfer
       // the reward for us.
-      vm.broadcast();
+      vm.broadcast(privateKey);
       rewardToken.approve(address(factory), rewardAmount);
 
       // Then we deploy the trigger.
-      vm.broadcast();
+      vm.broadcast(privateKey);
       _availableTrigger = address(
         factory.deployTrigger(
           query,

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.15;
 
-import "forge-std/Script.sol";
+import "script/ScriptUtils.s.sol";
 import "src/ChainlinkTriggerFactory.sol";
 
 /**
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
+  * The private key of an EOA that will be used for transactions in this script must be set in .env.
   *
   * To run this script:
   *
@@ -16,21 +17,20 @@ import "src/ChainlinkTriggerFactory.sol";
   * anvil --fork-url $OPTIMISM_RPC_URL
   *
   * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployTestChainlinkTriggers.s.sol \
+  * forge script script/test/DeployTestChainlinkTriggers.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   -vvvv
   *
   * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployTestChainlinkTriggers.s.sol \
+  * forge script script/test/DeployTestChainlinkTriggers.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
   *   --verify \
   *   --broadcast \
   *   -vvvv
   * ```
  */
-contract DeployTestChainlinkTriggers is Script {
+contract DeployTestChainlinkTriggers is ScriptUtils {
   struct ChainlinkMetadata {
     // The canonical oracle, assumed to be correct.
     AggregatorV3Interface truthOracle;
@@ -72,6 +72,8 @@ contract DeployTestChainlinkTriggers is Script {
     // ---------------------------
     // -------- Execution --------
     // ---------------------------
+
+    super.loadDeployerKey();
 
     for (uint i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.15;
 
-import "forge-std/Script.sol";
+import "script/ScriptUtils.s.sol";
 import "src/ChainlinkTriggerFactory.sol";
 
 /**
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys a Chainlink trigger using a ChainlinkTriggerFactory.
+  * The private key of an EOA that will be used for transactions in this script must be set in .env.
   *
   * To run this script:
   *
@@ -23,14 +24,13 @@ import "src/ChainlinkTriggerFactory.sol";
   * # Or, to broadcast transactions with etherscan verification.
   * forge script script/DeployChainlinkTrigger.s.sol \
   *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
   *   --verify \
   *   --broadcast \
   *   -vvvv
   * ```
  */
-contract DeployChainlinkTrigger is Script {
+contract DeployChainlinkTrigger is ScriptUtils {
   // -------------------------------
   // -------- Configuration --------
   // -------------------------------
@@ -57,6 +57,8 @@ contract DeployChainlinkTrigger is Script {
   // ---------------------------
 
   function run() public {
+    super.loadDeployerKey();
+
     console2.log("Deploying ChainlinkTrigger...");
     console2.log("    chainlinkTriggerFactory", address(factory));
     console2.log("    truthOracle", address(truthOracle));
@@ -80,7 +82,7 @@ contract DeployChainlinkTrigger is Script {
     if (_availableTrigger == address(0)) {
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one!
-      vm.broadcast();
+      vm.broadcast(privateKey);
       _availableTrigger = address(
         factory.deployTrigger(
           truthOracle,
