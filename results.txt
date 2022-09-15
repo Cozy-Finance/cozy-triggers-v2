@@ -1,0 +1,40 @@
+active to frozen
+
+[PASS] test_Benchmark1() (gas: 36777)
+[PASS] test_Benchmark5() (gas: 48114)
+[PASS] test_Benchmark15() (gas: 76431)
+[PASS] test_Benchmark25() (gas: 104793)
+[PASS] test_Benchmark35() (gas: 133111)
+[PASS] test_Benchmark45() (gas: 161474)
+
+~2.8k gas per additional set
+
+active to triggered
+[PASS] test_Benchmark1() (gas: 36958)
+[PASS] test_Benchmark5() (gas: 48295)
+[PASS] test_Benchmark15() (gas: 76612)
+[PASS] test_Benchmark25() (gas: 104974)
+[PASS] test_Benchmark35() (gas: 133292)
+[PASS] test_Benchmark45() (gas: 161655)
+
+~2.8k gas per additional set
+
+frozen to active
+[PASS] test_Benchmark1() (gas: 14949)
+[PASS] test_Benchmark5() (gas: 26286)
+[PASS] test_Benchmark15() (gas: 54603)
+[PASS] test_Benchmark25() (gas: 82965)
+[PASS] test_Benchmark35() (gas: 111283)
+[PASS] test_Benchmark45() (gas: 139646)
+
+~2.8k gas per additional set
+
+frozen to triggered
+[PASS] test_Benchmark1() (gas: 19930)
+[PASS] test_Benchmark5() (gas: 31267)
+[PASS] test_Benchmark15() (gas: 59584)
+[PASS] test_Benchmark25() (gas: 87946)
+[PASS] test_Benchmark35() (gas: 116264)
+[PASS] test_Benchmark45() (gas: 144627)
+
+~2.8k gas per additional set
