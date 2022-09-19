@@ -274,7 +274,8 @@ contract UMATriggerFactory {
   ) private view returns(bytes32) {
     // We use the reward amount in the salt so that triggers that are the same
     // except for their reward amount will still be deployed to different
-    // addresses and can be differentiated.
-    return keccak256(abi.encode(block.chainid, _triggerCount, _rewardAmount));
+    // addresses and can be differentiated. A trigger deployment with the same
+    // _rewardAmount and _triggerCount should be the same across chains.
+    return keccak256(bytes.concat(bytes32(_triggerCount), bytes32(_rewardAmount)));
   }
 }
