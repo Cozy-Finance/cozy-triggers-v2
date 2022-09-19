@@ -16,7 +16,7 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
   ISet[] public sets;
 
   /// @notice Prevent DOS attacks by limiting the number of sets.
-  uint256 public constant MAX_SET_LENGTH = 25;
+  uint256 public constant MAX_SET_LENGTH = 50;
 
   /// @notice The manager of the Cozy protocol.
   IManager public immutable manager;
