@@ -166,6 +166,8 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
         _triggerConstructorArgs
       )
     );
+    // We use _triggerCount as the salt so that the address is the same across chains for
+    // trigger contracts deployed with the same parameters.
     bytes32 _salt = _getSalt(_triggerCount);
     bytes32 _data = keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), _salt, _bytecodeHash));
     _address = address(uint160(uint256(_data)));
