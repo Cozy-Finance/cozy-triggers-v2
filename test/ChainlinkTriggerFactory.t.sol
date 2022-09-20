@@ -414,7 +414,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_expectedAddress, address(_trigger));
   }
 
-  function testFuzz_ComputeTriggerAddressComputesDifferentAddressesOnDifferentChains(
+  function testFuzz_ComputeTriggerAddressComputesSameAddressesOnDifferentChains(
     uint8 _chainId
   ) public {
     vm.assume(_chainId != block.chainid);
@@ -439,7 +439,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       42 // This is the 42nd trigger of its kind.
     );
 
-    assertNotEq(_addressA, _addressB);
+    assertEq(_addressA, _addressB);
   }
 }
 
