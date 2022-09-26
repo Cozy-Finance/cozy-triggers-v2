@@ -78,8 +78,9 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
     super.setUp();
 
     uint256 mainnetForkBlock = 15181633; // The mainnet block number at the time this test was written.
+    uint256 optimismForkBlock = 25582446; // The optimism block number
     mainnetForkId = vm.createFork(vm.envString("MAINNET_RPC_URL"), mainnetForkBlock);
-    optimismForkId = vm.createFork(vm.envString("OPTIMISM_RPC_URL")); // No fork block since Optimism has no blocks, TODO how to pin tests for better performance?
+    optimismForkId = vm.createFork(vm.envString("OPTIMISM_RPC_URL"), optimismForkBlock);
   }
 
   function testFork_DeployTriggerRevertsWithMismatchedOracles(
