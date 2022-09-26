@@ -657,9 +657,8 @@ contract DeployTriggerOptimismTest is DeployTriggerSharedTest {
     super.setUp();
     manager = IManager(address(42));
 
-    // We don't have a fork block since Optimism has no blocks.
-    // TODO how to pin tests for better performance?
-    forkId = vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"));
+    uint256 optimismForkBlock = 25582446;
+    forkId = vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"), optimismForkBlock);
 
     // https://github.com/UMAprotocol/protocol/blob/f011a6531fbd7c09d22aa46ef04828cf98f7f854/packages/core/networks/10.json
     umaOracleFinder = 0x278d6b1aA37d09769E519f05FcC5923161A8536D;
