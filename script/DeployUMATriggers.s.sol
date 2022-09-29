@@ -63,6 +63,10 @@ contract DeployUmaTriggers is ScriptUtils {
 
   UMATriggerFactory factory;
 
+  // ---------------------------
+  // -------- Execution --------
+  // ---------------------------
+
   function run(string memory _fileName) public {
     string memory _json = readInput(_fileName);
 
@@ -71,10 +75,6 @@ contract DeployUmaTriggers is ScriptUtils {
     factory.oracle();
 
     UMAMetadata[] memory _metadata = abi.decode(_json.parseRaw(".metadata"), (UMAMetadata[]));
-
-    // ---------------------------
-    // -------- Execution --------
-    // ---------------------------
 
     for (uint i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);
