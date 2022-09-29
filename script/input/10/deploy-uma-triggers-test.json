@@ -1,0 +1,52 @@
+{
+  "umaTriggerFactory": "0xE2f17fd1683D0815c4dEC54555B36B52Fe3c58CD",
+  "rewardToken": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+  "rewardAmount": 5000000,
+  "refundRecipient": "0x682bd405073dD248527E40184898eD45BB827527",
+  "bondAmount": 10000000,
+  "proposalDisputeWindow": 172800,
+  "metadata": [
+    {
+      "query": "q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
+      "name": "Uniswap v3 Protection",
+      "description": "Protects against general hacks and exploits on Uniswap v3. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://cryptologos.cc/logos/uniswap-uni-logo.svg?w=64&q=100"
+    },
+    {
+      "query": "q: title: Was there an Aave v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Aave v3 (https://aave.com/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
+      "name": "Aave v3 Protection",
+      "description": "Protects against general hacks and exploits on Aave v3. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://cryptologos.cc/logos/aave-aave-logo.png?w=64&q=100"
+    },
+    {
+      "query": "q: title: Was there a Curve 3pool hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Curve 3pool (https://curve.fi/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
+      "name": "Curve 3pool Protection",
+      "description": "Protects against general hacks and exploits on the Curve 3pool. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://cryptologos.cc/logos/curve-dao-token-crv-logo.png?w=64&q=100"
+    },
+    {
+      "query": "q: title: Was there a Hop bridge hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Hop bridge (https://hop.exchange/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
+      "name": "Hop Bridge Protection",
+      "description": "Bridges can be dangerous and this trigger protects against general hacks and exploits for the Hop bridge. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://dev-cozy-ui-v2.vercel.app/images/platforms/hop.jpeg?w=64&q=100"
+    },
+    {
+      "query": "q: title: Was there an Compound v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Compound v3 (https://v3-app.compound.finance/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
+      "name": "Compound v3 Protection",
+      "description": "Protects against general hacks and exploits on Compound v3. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://cryptologos.cc/logos/compound-comp-logo.png?v=023"
+    },
+    {
+      "query": "q: title: Was there a Curve steth pool hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in the Curve steth pool (https://curve.fi/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
+      "name": "Curve steth Pool Protection",
+      "description": "Protects against general hacks and exploits on the Curve steth pool. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://cryptologos.cc/logos/curve-dao-token-crv-logo.png?w=64&q=100"
+    },
+    {
+      "query": "q: title: Was there a Ribbon Finance hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Ribbon Finance (https://www.ribbon.finance/) at any point after Ethereum Mainnet block number 15541503? This will revert if a non-YES answer is proposed.",
+      "name": "Ribbon Finance Protection",
+      "description": "Protects against general hacks and exploits on Ribbon Finance. If something goes wrong, the UMA community can vote to trigger this market.",
+      "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/12387.png"
+    }
+  ]
+}
