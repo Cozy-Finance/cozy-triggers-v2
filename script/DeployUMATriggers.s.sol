@@ -16,13 +16,13 @@ import "src/UMATriggerFactory.sol";
   * anvil --fork-url $OPTIMISM_RPC_URL
   *
   * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployUmaTriggers.s.sol \
+  * forge script script/DeployUMATriggers.s.sol \
   *   --sig "run(string)" "deploy-uma-triggers-<test or production>" \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   -vvvv
   *
   * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployUmaTriggers.s.sol \
+  * forge script script/DeployUMATriggers.s.sol \
   *   --sig "run(string)" "deploy-uma-triggers-<test or production>.json" \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   --private-key $OWNER_PRIVATE_KEY \
@@ -71,7 +71,7 @@ contract DeployUmaTriggers is ScriptUtils {
     string memory _json = readInput(_fileName);
 
     factory = UMATriggerFactory(_json.readAddress(".umaTriggerFactory"));
-    // Loosely validate factory interface by ensuring `oracle()` don't revert.
+    // Loosely validate factory interface by ensuring `oracle()` doesn't revert.
     factory.oracle();
 
     UMAMetadata[] memory _metadata = abi.decode(_json.parseRaw(".metadata"), (UMAMetadata[]));
