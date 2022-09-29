@@ -2,17 +2,7 @@
   "chainlinkTriggerFactory": "0x5b73D0991d9868732815B0406e2f21b223b07Bc9",
   "metadata": [
     {
-      "pegPrice": 1e8,
-      "decimals": 8,
-      "trackingOracle": "0xECef79E109e997bCA29c1c0897ec9d7b03647F5E",
-      "priceTolerance": 5000,
-      "frequencyTolerance": 86400,
-      "name": "USDT Peg Protection",
-      "description": "Protects against the de-pegging of USDT to USD.",
-      "logoURI": "https://cryptologos.cc/logos/tether-usdt-logo.png?v=023"
-    },
-    {
-      "pegPrice": 1e8,
+      "pegPrice": 100000000,
       "decimals": 8,
       "trackingOracle": "0xECef79E109e997bCA29c1c0897ec9d7b03647F5E",
       "priceTolerance": 5000,
