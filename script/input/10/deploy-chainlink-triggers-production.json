@@ -1,4 +1,5 @@
 {
+  "chainlinkTriggerFactory": "0x5b73D0991d9868732815B0406e2f21b223b07Bc9",
   "metadata": [
     {
       "truthOracle": "0x13e3Ee699D1909E989722E753853AE30b17e08c5",

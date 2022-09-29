@@ -1,10 +1,5 @@
 {
   "umaTriggerFactory": "0xE2f17fd1683D0815c4dEC54555B36B52Fe3c58CD",
-  "rewardToken": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
-  "rewardAmount": 5000000,
-  "refundRecipient": "0x682bd405073dD248527E40184898eD45BB827527",
-  "bondAmount": 10000000,
-  "proposalDisputeWindow": 172800,
   "metadata": [
     {
       "query": "q: title: Was there a Uniswap v3 hack?, description: Was there a hack, bug, user error, or malfeasance resulting in a loss or lock-up of tokens in Uniswap v3 (https://uniswap.org/) at any point after Ethereum Mainnet block number 15397652? This will revert if a non-YES answer is proposed.",
