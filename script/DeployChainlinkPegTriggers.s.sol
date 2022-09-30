@@ -39,6 +39,7 @@ contract DeployChainlinkPegTriggers is ScriptUtils {
   // -------- Configured Inputs --------
   // -----------------------------------
 
+  // Note: The attributes in this struct must be in alphabetical order due to `parseJson` limitations.
   struct ChainlinkMetadata {
     // The amount of decimals used by the peg price and tracking oracle price.
     uint8 decimals;

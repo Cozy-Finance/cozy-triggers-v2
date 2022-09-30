@@ -39,6 +39,7 @@ contract DeployUmaTriggers is ScriptUtils {
   // -------- Configured Inputs --------
   // -----------------------------------
 
+  // Note: The attributes in this struct must be in alphabetical order due to `parseJson` limitations.
   struct UMAMetadata {
     // It's recommended that the bond be at least twice as high as the reward.
     uint256 bondAmount;

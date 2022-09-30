@@ -39,6 +39,7 @@ contract DeployChainlinkTriggers is ScriptUtils {
   // -------- Configured Inputs --------
   // -----------------------------------
 
+  // Note: The attributes in this struct must be in alphabetical order due to `parseJson` limitations.
   struct ChainlinkMetadata {
     // A human-readable description of the intent of the trigger.
     string description;
