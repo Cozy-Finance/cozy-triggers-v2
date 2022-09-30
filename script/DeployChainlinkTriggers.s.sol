@@ -8,6 +8,8 @@ import "src/ChainlinkTriggerFactory.sol";
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
+  * Before executing, the input json file `script/input/<chain-id>/deploy-chainlink-triggers-<test or production>.json`
+  * should be reviewed.
   *
   * To run this script:
   *

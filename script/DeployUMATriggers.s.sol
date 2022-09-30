@@ -8,6 +8,8 @@ import "src/UMATriggerFactory.sol";
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys UMA triggers for testing using an UMATriggerFactory.
+  * Before executing, the input json file `script/input/<chain-id>/deploy-uma-triggers-<test or production>.json`
+  * should be reviewed.
   *
   * To run this script:
   *
@@ -23,7 +25,7 @@ import "src/UMATriggerFactory.sol";
   *
   * # Or, to broadcast transactions with etherscan verification.
   * forge script script/DeployUMATriggers.s.sol \
-  *   --sig "run(string)" "deploy-uma-triggers-<test or production>.json" \
+  *   --sig "run(string)" "deploy-uma-triggers-<test or production>" \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
