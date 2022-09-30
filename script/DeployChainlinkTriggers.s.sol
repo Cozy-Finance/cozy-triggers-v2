@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.15;
 
-import "forge-std/Script.sol";
+import "script/ScriptUtils.sol";
 import "src/ChainlinkTriggerFactory.sol";
 
 /**
   * @notice Purpose: Local deploy, testing, and production.
   *
   * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
+  * Before executing, the input json file `script/input/<chain-id>/deploy-chainlink-triggers-<test or production>.json`
+  * should be reviewed.
   *
   * To run this script:
   *
@@ -16,12 +18,14 @@ import "src/ChainlinkTriggerFactory.sol";
   * anvil --fork-url $OPTIMISM_RPC_URL
   *
   * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployTestChainlinkTriggers.s.sol \
+  * forge script script/DeployChainlinkTriggers.s.sol \
+  *   --sig "run(string)" "deploy-chainlink-triggers-<test or production>" \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   -vvvv
   *
   * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployTestChainlinkTriggers.s.sol \
+  * forge script script/DeployChainlinkTriggers.s.sol \
+  *   --sig "run(string)" "deploy-chainlink-triggers-<test or production>" \
   *   --rpc-url "http://127.0.0.1:8545" \
   *   --private-key $OWNER_PRIVATE_KEY \
   *   --etherscan-api-key $ETHERSCAN_KEY \
@@ -30,48 +34,47 @@ import "src/ChainlinkTriggerFactory.sol";
   *   -vvvv
   * ```
  */
-contract DeployTestChainlinkTriggers is Script {
+contract DeployChainlinkTriggers is ScriptUtils {
+  using stdJson for string;
+
+  // -----------------------------------
+  // -------- Configured Inputs --------
+  // -----------------------------------
+
+  // Note: The attributes in this struct must be in alphabetical order due to `parseJson` limitations.
   struct ChainlinkMetadata {
-    // The canonical oracle, assumed to be correct.
-    AggregatorV3Interface truthOracle;
-    // The oracle we expect to diverge.
-    AggregatorV3Interface trackingOracle;
-    // The maximum percent delta between oracle prices that is allowed, as a wad.
-    uint256 priceTolerance;
-    // The maximum amount of time we allow to elapse before the truth oracle's price is deemed stale.
-    uint256 truthFrequencyTolerance;
-    // The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
-    uint256 trackingFrequencyTolerance;
-    // The name of the trigger, as it should appear within the Cozy interface.
-    string name;
     // A human-readable description of the intent of the trigger.
     string description;
     // Logo uri that describes the trigger, as it should appear within the Cozy user interface.
     string logoURI;
+    // The name of the trigger, as it should appear within the Cozy interface.
+    string name;
+    // The maximum percent delta between oracle prices that is allowed, as a wad.
+    uint256 priceTolerance;
+    // The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
+    uint256 trackingFrequencyTolerance;
+    // The oracle we expect to diverge.
+    AggregatorV3Interface trackingOracle;
+    // The maximum amount of time we allow to elapse before the truth oracle's price is deemed stale.
+    uint256 truthFrequencyTolerance;
+    // The canonical oracle, assumed to be correct.
+    AggregatorV3Interface truthOracle;
   }
 
-  // -------------------------------
-  // -------- Configuration --------
-  // -------------------------------
+  ChainlinkTriggerFactory factory;
 
-  ChainlinkTriggerFactory factory = ChainlinkTriggerFactory(0xe1e132Dc16A5eDFe60671a2128122a81Aa19970C);
+  // ---------------------------
+  // -------- Execution --------
+  // ---------------------------
 
-  function run() public {
-    ChainlinkMetadata[] memory _metadata = new ChainlinkMetadata[](1);
-    _metadata[0] = ChainlinkMetadata({
-      truthOracle: AggregatorV3Interface(0x13e3Ee699D1909E989722E753853AE30b17e08c5), // https://data.chain.link/optimism/mainnet/crypto-usd/eth-usd
-      trackingOracle: AggregatorV3Interface(0x41878779a388585509657CE5Fb95a80050502186), // https://data.chain.link/optimism/mainnet/crypto-usd/steth-usd
-      priceTolerance: 5000,
-      truthFrequencyTolerance: 1200,
-      trackingFrequencyTolerance: 86400,
-      name: "stETH Depeg Protection",
-      description: "Protects against the de-pegging of stETH to ETH on Lido.",
-      logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png"
-    });
+  function run(string memory _fileName) public {
+    string memory _json = readInput(_fileName);
 
-    // ---------------------------
-    // -------- Execution --------
-    // ---------------------------
+    factory = ChainlinkTriggerFactory(_json.readAddress(".chainlinkTriggerFactory"));
+    // Loosely validate factory interface by ensuring `manager()` doesn't revert.
+    factory.manager();
+
+    ChainlinkMetadata[] memory _metadata = abi.decode(_json.parseRaw(".metadata"), (ChainlinkMetadata[]));
 
     for (uint i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);
@@ -89,6 +92,10 @@ contract DeployTestChainlinkTriggers is Script {
     console2.log("    triggerName", _metadata.name);
     console2.log("    triggerDescription", _metadata.description);
     console2.log("    triggerLogoURI", _metadata.logoURI);
+
+    // Loosely validate oracle interfaces by ensuring `description()` doesn't revert.
+    _metadata.truthOracle.description();
+    _metadata.trackingOracle.description();
 
     // Check to see if a trigger has already been deployed with the desired configs.
     address _availableTrigger = factory.findAvailableTrigger(

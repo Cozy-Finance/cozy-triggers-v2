@@ -1,0 +1,15 @@
+{
+  "chainlinkTriggerFactory": "0x5b73D0991d9868732815B0406e2f21b223b07Bc9",
+  "metadata": [
+    {
+      "truthOracle": "0x13e3Ee699D1909E989722E753853AE30b17e08c5",
+      "trackingOracle": "0x41878779a388585509657CE5Fb95a80050502186",
+      "priceTolerance": 5000,
+      "truthFrequencyTolerance": 1200,
+      "trackingFrequencyTolerance": 86400,
+      "name": "stETH Depeg Protection",
+      "description": "Protects against the de-pegging of stETH to ETH on Lido.",
+      "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 [profile.default]
 # forge config
 verbosity = 3
+fs_permissions = [{ access = "read", path = "./script/input"}]
 # Solidity config.
 solc-version = "0.8.15"
 optimizer = true
