@@ -2,7 +2,7 @@
 pragma solidity 0.8.15;
 
 import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
-import "script/ScriptUtils.s.sol";
+import "script/ScriptUtils.sol";
 import "src/ChainlinkTriggerFactory.sol";
 import "src/UMATriggerFactory.sol";
 
