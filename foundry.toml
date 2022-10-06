@@ -3,7 +3,7 @@
 verbosity = 3
 fs_permissions = [{ access = "read", path = "./script/input"}]
 # Solidity config.
-solc-version = "0.8.15"
+solc-version = "0.8.16"
 optimizer = true
 optimizer-runs = 10_000_000
 bytecode_hash = "ipfs"
