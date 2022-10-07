@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import "script/ScriptUtils.sol";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "cozy-v2-interfaces/interfaces/IChainlinkTriggerFactory.sol";

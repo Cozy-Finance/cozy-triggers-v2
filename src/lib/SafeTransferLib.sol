@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 // A named import is used to avoid identifier naming conflicts between IERC20 imports. solc throws a DeclarationError
 // if an interface with the same name is imported twice in a file using different paths, even if they have the

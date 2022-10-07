@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import "uma-protocol/packages/core/contracts/oracle/interfaces/OracleAncillaryInterface.sol";
 import "src/UMATriggerFactory.sol";
