@@ -35,6 +35,19 @@ contract ChainlinkTrigger is BaseTrigger {
   /// @notice The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
   uint256 public immutable trackingFrequencyTolerance;
 
+  /// @notice The scale factor to apply to the oracle with less decimals if the oracles do not have the same amount
+  /// of decimals.
+  uint256 public immutable scaleFactor;
+
+  /// @notice Specifies the oracle price to scale upwards if the oracles do not have the same amount of decimals.
+  OracleToScale public immutable oracleToScale;
+
+  enum OracleToScale {
+    NONE,
+    TRUTH,
+    TRACKING
+  }
+
   /// @dev Thrown when the `oracle`s price is negative.
   error InvalidPrice();
 
@@ -67,6 +80,21 @@ contract ChainlinkTrigger is BaseTrigger {
     priceTolerance = _priceTolerance;
     truthFrequencyTolerance = _truthFrequencyTolerance;
     trackingFrequencyTolerance = _trackingFrequencyTolerance;
+
+    OracleToScale _oracleToScale;
+    uint256 _scaleFactor;
+    uint256 _truthOracleDecimals = truthOracle.decimals();
+    uint256 _trackingOracleDecimals = trackingOracle.decimals();
+    if (_trackingOracleDecimals < _truthOracleDecimals) {
+      _oracleToScale = OracleToScale.TRACKING;
+      _scaleFactor = 10 ** (_truthOracleDecimals - _trackingOracleDecimals);
+    } else if (_truthOracleDecimals < _trackingOracleDecimals) {
+      _oracleToScale = OracleToScale.TRUTH;
+      _scaleFactor = 10 ** (_trackingOracleDecimals - _truthOracleDecimals);
+    }
+    oracleToScale = _oracleToScale;
+    scaleFactor = _scaleFactor;
+
     runProgrammaticCheck();
   }
 
@@ -93,6 +121,13 @@ contract ChainlinkTrigger is BaseTrigger {
   function programmaticCheck() internal view returns (bool) {
     uint256 _truePrice = _oraclePrice(truthOracle, truthFrequencyTolerance);
     uint256 _trackingPrice = _oraclePrice(trackingOracle, trackingFrequencyTolerance);
+
+    // If one of the oracles has fewer decimals than the other, we scale up the lower decimal price.
+    if (oracleToScale == OracleToScale.TRUTH) {
+      _truePrice = _truePrice * scaleFactor;
+    } else if (oracleToScale == OracleToScale.TRACKING) {
+      _trackingPrice = _trackingPrice * scaleFactor;
+    }
 
     uint256 _priceDelta = _truePrice > _trackingPrice ? _truePrice - _trackingPrice : _trackingPrice - _truePrice;
 
