@@ -17,6 +17,8 @@ contract MockManager is ICState {
 }
 
 contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
+  uint256 constant ZOC = 1e4;
+
   address constant ethUsdOracleMainnet    = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; //   ETH / USD on mainnet
   address constant stEthUsdOracleMainnet  = 0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8; // stETH / USD on mainnet
   address constant usdcUsdOracleMainnet   = 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6; //  USDC / USD on mainnet
@@ -224,6 +226,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     IChainlinkTrigger _trigger = factory.deployTrigger(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
@@ -251,6 +254,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     address _triggerAddr = factory.computeTriggerAddress(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
@@ -300,6 +304,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     bytes32 _triggerConfigId = factory.triggerConfigId(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
@@ -390,6 +395,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     address _expectedAddress = factory.computeTriggerAddress(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
@@ -450,6 +456,7 @@ contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     bytes32 _configIdA = factory.triggerConfigId(
       AggregatorV3Interface(stEthUsdOracleMainnet),
       AggregatorV3Interface(ethUsdOracleMainnet),
@@ -472,6 +479,7 @@ contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     bytes32 _triggerConfigId = factory.triggerConfigId(
       AggregatorV3Interface(ethUsdOracleMainnet),
       AggregatorV3Interface(stEthUsdOracleMainnet),
@@ -515,6 +523,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _trackingFrequencyTolerance,
     uint8 _triggersToDeploy
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     // This test is really slow (10+ seconds) without reasonable bounds.
     _triggersToDeploy = uint8(bound(_triggersToDeploy, 0, 10));
 
@@ -553,6 +562,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
     uint256 _trackingFrequencyTolerance,
     uint8 _triggersToDeploy
   ) public {
+    _priceTolerance = bound(_priceTolerance, 0, ZOC - 1);
     // This test is really slow (10+ seconds) without reasonable bounds.
     _triggersToDeploy = uint8(bound(_triggersToDeploy, 0, 10));
 

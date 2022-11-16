@@ -31,6 +31,7 @@ contract MockChainlinkTrigger is ChainlinkTrigger {
 }
 
 abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
+  uint256 constant ZOC = 1e4;
   uint256 constant basePrice = 1945400000000; // The answer for BTC/USD at block 15135183.
   uint256 priceTolerance = 0.15e4; // 15%.
   uint256 truthFrequencyTolerance = 60;
@@ -96,6 +97,21 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
       trackingFrequencyTolerance
     );
     assertTrue(trigger.acknowledged()); // Programmatic triggers should be automatically acknowledged in the constructor.
+  }
+
+  function testFuzz_ConstructorInvalidPriceTolerance(uint256 _priceTolerance) public {
+    _priceTolerance = bound(_priceTolerance, ZOC, type(uint256).max);
+
+    IManager _manager = IManager(address(new MockManager()));
+    vm.expectRevert(ChainlinkTrigger.InvalidPriceTolerance.selector);
+    trigger = new MockChainlinkTrigger(
+      _manager,
+      truthOracle,
+      targetOracle,
+      _priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
   }
 }
 

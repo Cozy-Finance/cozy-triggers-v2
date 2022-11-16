@@ -38,6 +38,9 @@ contract ChainlinkTrigger is BaseTrigger {
   /// @dev Thrown when the `oracle`s price is negative.
   error InvalidPrice();
 
+  /// @dev Thrown when the `priceTolerance` is greater than or equal to `ZOC`.
+  error InvalidPriceTolerance();
+
   /// @dev Thrown when the `oracle`s price timestamp is greater than the block's timestamp.
   error InvalidTimestamp();
 
@@ -47,7 +50,7 @@ contract ChainlinkTrigger is BaseTrigger {
   /// @param _manager Address of the Cozy protocol manager.
   /// @param _truthOracle The canonical oracle, assumed to be correct.
   /// @param _trackingOracle The oracle we expect to diverge.
-  /// @param _priceTolerance The maximum percent delta between oracle prices that is allowed, as a wad.
+  /// @param _priceTolerance The maximum percent delta between oracle prices that is allowed, as a zoc.
   /// @param _truthFrequencyTolerance The maximum amount of time we allow to elapse before the truth oracle's price is deemed stale.
   /// @param _trackingFrequencyTolerance The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
   constructor(
@@ -58,6 +61,7 @@ contract ChainlinkTrigger is BaseTrigger {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
   ) BaseTrigger(_manager) {
+    if (_priceTolerance >= ZOC) revert InvalidPriceTolerance();
     truthOracle = _truthOracle;
     trackingOracle = _trackingOracle;
     priceTolerance = _priceTolerance;
