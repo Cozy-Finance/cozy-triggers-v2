@@ -46,8 +46,8 @@ abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
     set = ISet(address(42));
     IManager _manager = IManager(address(new MockManager()));
 
-    truthOracle = new MockChainlinkOracle(basePrice);
-    targetOracle = new MockChainlinkOracle(1947681501285); // The answer for WBTC/USD at block 15135183.
+    truthOracle = new MockChainlinkOracle(basePrice, 8);
+    targetOracle = new MockChainlinkOracle(1947681501285, 8); // The answer for WBTC/USD at block 15135183.
 
     trigger = new MockChainlinkTrigger(
       _manager,
@@ -67,11 +67,11 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
   function test_ConstructorRunProgrammaticCheck() public {
     IManager _manager = IManager(address(new MockManager()));
 
-    truthOracle = new MockChainlinkOracle(basePrice);
+    truthOracle = new MockChainlinkOracle(basePrice, 8);
 
     // Truth oracle has a base price of 1945400000000 and the price tolerance is 0.15e4, so with a target oracle price
     // of 1e12, runProgrammaticCheck() should result in the trigger becoming triggered.
-    targetOracle = new MockChainlinkOracle(1e12);
+    targetOracle = new MockChainlinkOracle(1e12, 8);
     trigger = new MockChainlinkTrigger(
       _manager,
       truthOracle,
@@ -112,6 +112,87 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
       truthFrequencyTolerance,
       trackingFrequencyTolerance
     );
+  }
+
+  function test_ConstructorOraclesDifferentDecimals() public {
+    MockChainlinkOracle _truthOracle = new MockChainlinkOracle(19454000000000000000000, 18);
+    MockChainlinkOracle _targetOracle = new MockChainlinkOracle(1947681501285, 8); // The answer for WBTC/USD at block 15135183.
+
+    trigger = new MockChainlinkTrigger(
+      manager,
+      _truthOracle,
+      _targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertEq(trigger.scaleFactor(), 1e10);
+    assertEq(uint256(trigger.oracleToScale()), uint256(ChainlinkTrigger.OracleToScale.TRACKING));
+
+    _truthOracle = new MockChainlinkOracle(1945400000000, 8);
+    _targetOracle = new MockChainlinkOracle(19476815012850000000000, 18); // The answer for WBTC/USD at block 15135183.
+    trigger = new MockChainlinkTrigger(
+      manager,
+      _truthOracle,
+      _targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertEq(trigger.scaleFactor(), 1e10);
+    assertEq(uint256(trigger.oracleToScale()), uint256(ChainlinkTrigger.OracleToScale.TRUTH));
+
+    _truthOracle = new MockChainlinkOracle(19454, 0);
+    _targetOracle = new MockChainlinkOracle(19476815012850000000000, 18); // The answer for WBTC/USD at block 15135183.
+    trigger = new MockChainlinkTrigger(
+      manager,
+      _truthOracle,
+      _targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertEq(trigger.scaleFactor(), 1e18);
+    assertEq(uint256(trigger.oracleToScale()), uint256(ChainlinkTrigger.OracleToScale.TRUTH));
+
+    _truthOracle = new MockChainlinkOracle(194540, 1);
+    _targetOracle = new MockChainlinkOracle(19476815012850000000000, 18); // The answer for WBTC/USD at block 15135183.
+    trigger = new MockChainlinkTrigger(
+      manager,
+      _truthOracle,
+      _targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertEq(trigger.scaleFactor(), 1e17);
+    assertEq(uint256(trigger.oracleToScale()), uint256(ChainlinkTrigger.OracleToScale.TRUTH));
+
+    _truthOracle = new MockChainlinkOracle(19454000000000000000000, 18);
+    _targetOracle = new MockChainlinkOracle(1947681501285000000000000, 20); // The answer for WBTC/USD at block 15135183.
+    trigger = new MockChainlinkTrigger(
+      manager,
+      _truthOracle,
+      _targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertEq(trigger.scaleFactor(), 1e2);
+    assertEq(uint256(trigger.oracleToScale()), uint256(ChainlinkTrigger.OracleToScale.TRUTH));
+
+    _truthOracle = new MockChainlinkOracle(1945400000000, 8);
+    _targetOracle = new MockChainlinkOracle(1947681501285, 8); // The answer for WBTC/USD at block 15135183.
+    trigger = new MockChainlinkTrigger(
+      manager,
+      _truthOracle,
+      _targetOracle,
+      priceTolerance,
+      truthFrequencyTolerance,
+      trackingFrequencyTolerance
+    );
+    assertEq(trigger.scaleFactor(), 0);
+    assertEq(uint256(trigger.oracleToScale()), uint256(ChainlinkTrigger.OracleToScale.NONE));
   }
 }
 
@@ -299,8 +380,8 @@ abstract contract PegProtectionTriggerUnitTest is TriggerTestSetup {
     set = ISet(address(42));
     IManager _manager = IManager(address(new MockManager()));
 
-    truthOracle = new MockChainlinkOracle(1e8); // A $1 peg.
-    trackingOracle = new MockChainlinkOracle(1e8);
+    truthOracle = new MockChainlinkOracle(1e8, 8); // A $1 peg.
+    trackingOracle = new MockChainlinkOracle(1e8, 8);
 
     trigger = new MockChainlinkTrigger(
       _manager,
