@@ -231,7 +231,7 @@ contract UMATrigger is BaseTrigger {
 
     // Freeze the market and set so that funds cannot be withdrawn, since
     // there's now a real possibility that we are going to trigger.
-    _updateTriggerState(CState.FROZEN);
+    _updateTriggerState(MarketState.FROZEN);
   }
 
   /// @notice UMA callback for settlement. This code is run when the protocol
@@ -260,13 +260,13 @@ contract UMATrigger is BaseTrigger {
     if (_answer == AFFIRMATIVE_ANSWER) {
       uint256 _rewardBalance = rewardToken.balanceOf(address(this));
       if (_rewardBalance > 0) rewardToken.safeTransfer(refundRecipient, _rewardBalance);
-      _updateTriggerState(CState.TRIGGERED);
+      _updateTriggerState(MarketState.TRIGGERED);
     } else {
       // If the answer was not affirmative, i.e. "Yes, the protocol was hacked",
       // the trigger should return to the ACTIVE state. And we need to resubmit
       // our query so that we are informed if the event we care about happens in
       // the future.
-      _updateTriggerState(CState.ACTIVE);
+      _updateTriggerState(MarketState.ACTIVE);
       _submitRequestToOracle();
     }
   }
@@ -277,12 +277,12 @@ contract UMATrigger is BaseTrigger {
   /// settled the query on its own. If the oracle's answer is an
   /// AFFIRMATIVE_ANSWER, this function will toggle the trigger and update
   /// associated markets.
-  function runProgrammaticCheck() external returns (CState) {
+  function runProgrammaticCheck() external returns (MarketState) {
     // Rather than revert when triggered, we simply return the state and exit.
     // Both behaviors are acceptable, but returning is friendlier to the caller
     // as they don't need to handle a revert and can simply parse the
     // transaction's logs to know if the call resulted in a state change.
-    if (state == CState.TRIGGERED) return state;
+    if (state == MarketState.TRIGGERED) return state;
 
     bool _oracleHasPrice = oracle.hasPrice(
       address(this),

@@ -109,7 +109,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     );
 
     assertEq(address(_trigger), _computedTriggerAddress);
-    assertEq(_trigger.state(), CState.ACTIVE);
+    assertEq(_trigger.state(), MarketState.ACTIVE);
     assertEq(_trigger.getSets().length, 0);
     assertEq(_trigger.manager(), factory.manager());
     assertEq(address(_trigger.oracle()), address(umaOracle));
@@ -225,7 +225,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       _vars.queryTimestamp,
       bytes(_vars.query)
     );
-    assertEq(_vars.trigger.state(), CState.ACTIVE);
+    assertEq(_vars.trigger.state(), MarketState.ACTIVE);
 
     // Nor can the user call priceSettled.
     vm.expectRevert(BaseTrigger.Unauthorized.selector);
@@ -235,7 +235,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes(_vars.query),
       AFFIRMATIVE_ANSWER
     );
-    assertEq(_vars.trigger.state(), CState.ACTIVE);
+    assertEq(_vars.trigger.state(), MarketState.ACTIVE);
 
     _vars.umaRequest = umaOracle.getRequest(
       address(_vars.trigger),
@@ -288,7 +288,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
 
     // We have to propose a positive answer to move the request lifecycle
     // forward -- only positive answers are accepted as proposals.
-    assertEq(_vars.trigger.state(), CState.ACTIVE);
+    assertEq(_vars.trigger.state(), MarketState.ACTIVE);
     vm.prank(_vars.proposer);
     umaOracle.proposePrice(
       address(_vars.trigger),
@@ -297,14 +297,14 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       bytes(_vars.query),
       AFFIRMATIVE_ANSWER
     );
-    assertEq(_vars.trigger.state(), CState.FROZEN);
+    assertEq(_vars.trigger.state(), MarketState.FROZEN);
 
     // Try calling runProgrammaticCheck. It should revert because the request
     // isn't settleable yet.
     vm.expectRevert(UMATrigger.Unsettleable.selector);
     vm.prank(_vars.settler);
     _vars.trigger.runProgrammaticCheck();
-    assertEq(_vars.trigger.state(), CState.FROZEN);
+    assertEq(_vars.trigger.state(), MarketState.FROZEN);
 
     if (_isDisputed) {
       // Dispute the answer.
@@ -357,7 +357,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
         assertEq(_vars.trigger.requestTimestamp(), _vars.queryTimestamp);
       } else {
         // The market should return to the ACTIVE state.
-        assertEq(_vars.trigger.state(), CState.ACTIVE);
+        assertEq(_vars.trigger.state(), MarketState.ACTIVE);
         // A new query SHOULD have been submitted;
         assertGt(_vars.trigger.requestTimestamp(), _vars.queryTimestamp);
       }
@@ -375,7 +375,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     _vars.trigger.runProgrammaticCheck();
 
     if (_settledAnswer == AFFIRMATIVE_ANSWER) {
-      assertEq(_vars.trigger.state(), CState.TRIGGERED);
+      assertEq(_vars.trigger.state(), MarketState.TRIGGERED);
       if (_isDisputed) {
         if (_isExternallySettled) {
           // The reward was sent back to the trigger creator.
@@ -395,7 +395,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       }
     } else {
       // The market should return to the ACTIVE state.
-      assertEq(_vars.trigger.state(), CState.ACTIVE);
+      assertEq(_vars.trigger.state(), MarketState.ACTIVE);
       // A new query should have been issued to UMA at this point.
       assertGt(_vars.trigger.requestTimestamp(), _vars.queryTimestamp);
     }
@@ -529,7 +529,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     assertEq(_umaRequest.settled, true);
 
     // Run the trigger programmatic check.
-    assertEq(_trigger.runProgrammaticCheck(), CState.TRIGGERED);
+    assertEq(_trigger.runProgrammaticCheck(), MarketState.TRIGGERED);
   }
 
   function testFork_TriggerFreezesMarketsWhenAnswersAreProposed(
@@ -562,7 +562,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       _queryTimestamp,
       bytes("Has USDT been hacked?")
     );
-    assertEq(_trigger.state(), CState.ACTIVE);
+    assertEq(_trigger.state(), MarketState.ACTIVE);
 
     OptimisticOracleV2Interface.Request memory _umaRequest;
     _umaRequest = umaOracle.getRequest(
@@ -586,7 +586,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     vm.stopPrank();
 
     // The market should now be frozen so no one can withdraw funds.
-    assertEq(_trigger.state(), CState.FROZEN);
+    assertEq(_trigger.state(), MarketState.FROZEN);
 
     // Have someone else dispute the answer.
     deal(address(rewardToken), address(42), _bondAmount + _umaRequest.finalFee);
@@ -609,7 +609,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     );
 
     // The market should now be back to active so that funds can be withdrawn.
-    assertEq(_trigger.state(), CState.ACTIVE);
+    assertEq(_trigger.state(), MarketState.ACTIVE);
   }
 }
 

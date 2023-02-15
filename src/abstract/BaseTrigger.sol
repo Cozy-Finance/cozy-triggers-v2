@@ -9,7 +9,7 @@ import "cozy-v2-interfaces/interfaces/IBaseTrigger.sol";
  */
 abstract contract BaseTrigger is ICState, IBaseTrigger {
   /// @notice Current trigger state.
-  CState public state;
+  MarketState public state;
 
   /// @notice The Sets that use this trigger in a market.
   /// @dev Use this function to retrieve a specific Set.
@@ -73,19 +73,19 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
   }
 
   /// @dev Child contracts should use this function to handle Trigger state transitions.
-  function _updateTriggerState(CState _newState) internal returns (CState) {
+  function _updateTriggerState(MarketState _newState) internal returns (MarketState) {
     if (!_isValidTriggerStateTransition(state, _newState)) revert InvalidStateTransition();
     state = _newState;
     uint256 setLength = sets.length;
     for (uint256 i = 0; i < setLength; i = uncheckedIncrement(i)) {
-      manager.updateMarketState(sets[i], _newState);
+      sets[i].updateMarketState(_newState);
     }
     emit TriggerStateUpdated(_newState);
     return _newState;
   }
 
   /// @dev Reimplement this function if different state transitions are needed.
-  function _isValidTriggerStateTransition(CState _oldState, CState _newState) internal virtual returns(bool) {
+  function _isValidTriggerStateTransition(MarketState _oldState, MarketState _newState) internal virtual returns(bool) {
     // | From / To | ACTIVE      | FROZEN      | PAUSED   | TRIGGERED |
     // | --------- | ----------- | ----------- | -------- | --------- |
     // | ACTIVE    | -           | true        | false    | true      |
@@ -93,12 +93,12 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
     // | PAUSED    | false       | false       | -        | false     | <-- PAUSED is a set-level state, triggers cannot be paused
     // | TRIGGERED | false       | false       | false    | -         | <-- TRIGGERED is a terminal state
 
-    if (_oldState == CState.TRIGGERED) return false;
+    if (_oldState == MarketState.TRIGGERED) return false;
     if (_oldState == _newState) return true; // If oldState == newState, return true since the Manager will convert that into a no-op.
-    if (_oldState == CState.ACTIVE && _newState == CState.FROZEN) return true;
-    if (_oldState == CState.FROZEN && _newState == CState.ACTIVE) return true;
-    if (_oldState == CState.ACTIVE && _newState == CState.TRIGGERED) return true;
-    if (_oldState == CState.FROZEN && _newState == CState.TRIGGERED) return true;
+    if (_oldState == MarketState.ACTIVE && _newState == MarketState.FROZEN) return true;
+    if (_oldState == MarketState.FROZEN && _newState == MarketState.ACTIVE) return true;
+    if (_oldState == MarketState.ACTIVE && _newState == MarketState.TRIGGERED) return true;
+    if (_oldState == MarketState.FROZEN && _newState == MarketState.TRIGGERED) return true;
     return false;
   }
 

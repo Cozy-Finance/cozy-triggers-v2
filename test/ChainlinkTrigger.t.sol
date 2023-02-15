@@ -10,9 +10,11 @@ contract MockManager is ICState {
   function sets(ISet /* set */) external pure returns(IManager.SetData memory) {
     return IManager.SetData(true, true, 0, 0);
   }
+}
 
-  // This can just be a no-op for the test.
-  function updateMarketState(ISet /* the set */, CState /* new state */) external {}
+contract MockSet is ICState {
+  // no-op for testing
+  function updateMarketState(MarketState) external {}
 }
 
 contract MockChainlinkTrigger is ChainlinkTrigger {
@@ -23,11 +25,13 @@ contract MockChainlinkTrigger is ChainlinkTrigger {
     uint256 _priceTolerance,
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
-  ) ChainlinkTrigger(_manager, _truthOracle, _targetOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance) {}
+  ) ChainlinkTrigger(_manager, _truthOracle, _targetOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance) {
+    sets.push(ISet(address(new MockSet())));
+  }
 
   function TEST_HOOK_programmaticCheck() public view returns (bool) { return programmaticCheck(); }
 
-  function TEST_HOOK_setState(CState _newState) public { state = _newState; }
+  function TEST_HOOK_setState(MarketState _newState) public { state = _newState; }
 }
 
 abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
@@ -43,7 +47,7 @@ abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
 
   function setUp() public override {
     super.setUp();
-    set = ISet(address(42));
+    set = ISet(address(new MockSet()));
     IManager _manager = IManager(address(new MockManager()));
 
     truthOracle = new MockChainlinkOracle(basePrice, 8);
@@ -83,7 +87,7 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
 
     // The trigger constructor should have executed runProgrammaticCheck() which should have transitioned
     // the trigger into the triggered state.
-    assertEq(trigger.state(), CState.TRIGGERED);
+    assertEq(trigger.state(), MarketState.TRIGGERED);
   }
 
   function test_ConstructorAcknowledge() public {
@@ -199,16 +203,16 @@ contract ChainlinkTriggerConstructorTest is ChainlinkTriggerUnitTest {
 contract RunProgrammaticCheckTest is ChainlinkTriggerUnitTest {
   using FixedPointMathLib for uint256;
 
-  function runProgrammaticCheckAssertions(uint256 _targetPrice, CState _expectedTriggerState) public {
+  function runProgrammaticCheckAssertions(uint256 _targetPrice, MarketState _expectedTriggerState) public {
     // Setup.
-    trigger.TEST_HOOK_setState(CState.ACTIVE);
+    trigger.TEST_HOOK_setState(MarketState.ACTIVE);
     targetOracle.TEST_HOOK_setPrice(_targetPrice);
 
     // Exercise.
-    if (_expectedTriggerState == CState.TRIGGERED) {
+    if (_expectedTriggerState == MarketState.TRIGGERED) {
       vm.expectCall(
-        address(trigger.manager()),
-        abi.encodeCall(IManager.updateMarketState, (set, CState.TRIGGERED))
+        address(trigger.sets(0)),
+        abi.encodeCall(ISet.updateMarketState, (MarketState.TRIGGERED))
       );
     }
     assertEq(trigger.runProgrammaticCheck(), _expectedTriggerState);
@@ -217,24 +221,24 @@ contract RunProgrammaticCheckTest is ChainlinkTriggerUnitTest {
 
   function test_RunProgrammaticCheckUpdatesTriggerState() public {
     uint256 _overBaseOutsideTolerance = basePrice.mulDivDown(1e4 + priceTolerance, 1e4) + 1e9;
-    runProgrammaticCheckAssertions(_overBaseOutsideTolerance, CState.TRIGGERED);
+    runProgrammaticCheckAssertions(_overBaseOutsideTolerance, MarketState.TRIGGERED);
 
     uint256 _overBaseAtTolerance = basePrice.mulDivDown(1e4 + priceTolerance, 1e4);
-    runProgrammaticCheckAssertions(_overBaseAtTolerance, CState.ACTIVE);
+    runProgrammaticCheckAssertions(_overBaseAtTolerance, MarketState.ACTIVE);
 
     uint256 _overBaseWithinTolerance = basePrice.mulDivDown(1e4 + priceTolerance, 1e4) - 1e9;
-    runProgrammaticCheckAssertions(_overBaseWithinTolerance, CState.ACTIVE);
+    runProgrammaticCheckAssertions(_overBaseWithinTolerance, MarketState.ACTIVE);
 
-    runProgrammaticCheckAssertions(basePrice, CState.ACTIVE); // At base exactly.
+    runProgrammaticCheckAssertions(basePrice, MarketState.ACTIVE); // At base exactly.
 
     uint256 _underBaseWithinTolerance = basePrice.mulDivDown(1e4 - priceTolerance, 1e4) + 1e9;
-    runProgrammaticCheckAssertions(_underBaseWithinTolerance, CState.ACTIVE);
+    runProgrammaticCheckAssertions(_underBaseWithinTolerance, MarketState.ACTIVE);
 
     uint256 _underBaseAtTolerance = basePrice.mulDivDown(1e4 - priceTolerance, 1e4);
-    runProgrammaticCheckAssertions(_underBaseAtTolerance, CState.ACTIVE);
+    runProgrammaticCheckAssertions(_underBaseAtTolerance, MarketState.ACTIVE);
 
     uint256 _underBaseOutsideTolerance = basePrice.mulDivDown(1e4 - priceTolerance, 1e4) - 1e9;
-    runProgrammaticCheckAssertions(_underBaseOutsideTolerance, CState.TRIGGERED);
+    runProgrammaticCheckAssertions(_underBaseOutsideTolerance, MarketState.TRIGGERED);
   }
 }
 
@@ -377,7 +381,7 @@ abstract contract PegProtectionTriggerUnitTest is TriggerTestSetup {
 
   function setUp() public override {
     super.setUp();
-    set = ISet(address(42));
+    set = ISet(address(new MockSet()));
     IManager _manager = IManager(address(new MockManager()));
 
     truthOracle = new MockChainlinkOracle(1e8, 8); // A $1 peg.
@@ -398,16 +402,16 @@ abstract contract PegProtectionTriggerUnitTest is TriggerTestSetup {
 
 contract PegProtectionRunProgrammaticCheckTest is PegProtectionTriggerUnitTest {
 
-  function runProgrammaticCheckAssertions(uint256 _price, CState _expectedTriggerState) public {
+  function runProgrammaticCheckAssertions(uint256 _price, MarketState _expectedTriggerState) public {
     // Setup.
-    trigger.TEST_HOOK_setState(CState.ACTIVE);
+    trigger.TEST_HOOK_setState(MarketState.ACTIVE);
     trackingOracle.TEST_HOOK_setPrice(_price);
 
     // Exercise.
-    if (_expectedTriggerState == CState.TRIGGERED) {
+    if (_expectedTriggerState == MarketState.TRIGGERED) {
       vm.expectCall(
-        address(trigger.manager()),
-        abi.encodeCall(IManager.updateMarketState, (set, CState.TRIGGERED))
+        address(trigger.sets(0)),
+        abi.encodeCall(ISet.updateMarketState, (MarketState.TRIGGERED))
       );
     }
     assertEq(trigger.runProgrammaticCheck(), _expectedTriggerState);
@@ -415,13 +419,13 @@ contract PegProtectionRunProgrammaticCheckTest is PegProtectionTriggerUnitTest {
   }
 
   function test_RunProgrammaticCheckUpdatesTriggerState() public {
-    runProgrammaticCheckAssertions(130000000, CState.TRIGGERED); // Over peg outside tolerance.
-    runProgrammaticCheckAssertions(104000000, CState.ACTIVE); // Over peg but within tolerance.
-    runProgrammaticCheckAssertions(105000000, CState.ACTIVE); // Over peg at tolerance.
-    runProgrammaticCheckAssertions(100000000, CState.ACTIVE); // At peg exactly.
-    runProgrammaticCheckAssertions(96000000, CState.ACTIVE); // Under peg but within tolerance.
-    runProgrammaticCheckAssertions(95000000, CState.ACTIVE); // Under peg at tolerance.
-    runProgrammaticCheckAssertions(90000000, CState.TRIGGERED); // Under peg outside tolerance.
+    runProgrammaticCheckAssertions(130000000, MarketState.TRIGGERED); // Over peg outside tolerance.
+    runProgrammaticCheckAssertions(104000000, MarketState.ACTIVE); // Over peg but within tolerance.
+    runProgrammaticCheckAssertions(105000000, MarketState.ACTIVE); // Over peg at tolerance.
+    runProgrammaticCheckAssertions(100000000, MarketState.ACTIVE); // At peg exactly.
+    runProgrammaticCheckAssertions(96000000, MarketState.ACTIVE); // Under peg but within tolerance.
+    runProgrammaticCheckAssertions(95000000, MarketState.ACTIVE); // Under peg at tolerance.
+    runProgrammaticCheckAssertions(90000000, MarketState.TRIGGERED); // Under peg outside tolerance.
   }
 }
 

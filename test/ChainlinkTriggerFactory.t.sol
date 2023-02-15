@@ -13,7 +13,7 @@ contract MockManager is ICState {
   }
 
   // This is a no-op, it's not needed for these tests.
-  function updateMarketState(ISet /* set */, CState /* newMarketState */) external {}
+  function updateMarketState(ISet /* set */, MarketState /* newMarketState */) external {}
 }
 
 contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
@@ -174,7 +174,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
       assertEq(_trigger.truthFrequencyTolerance(), 0);
     }
 
-    assertEq(_trigger.state(), CState.ACTIVE);
+    assertEq(_trigger.state(), MarketState.ACTIVE);
     assertEq(_trigger.getSets().length, 0);
     assertEq(_trigger.manager(), factory.manager());
     assertEq(_trigger.truthOracle(), AggregatorV3Interface(_truthOracle));
@@ -193,8 +193,8 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
     // price has been mocked to 0 which results in a price delta greater than _priceTolerance between the
     // truth and tracking oracles.
     vm.expectEmit(true, true, true, true);
-    emit TriggerStateUpdated(CState.TRIGGERED);
-    assertEq(_trigger.runProgrammaticCheck(), CState.TRIGGERED);
+    emit TriggerStateUpdated(MarketState.TRIGGERED);
+    assertEq(_trigger.runProgrammaticCheck(), MarketState.TRIGGERED);
   }
 
   function testFork_DeployTriggerChainlinkIntegration(
@@ -610,7 +610,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       )
     );
 
-    assertEq(_trigger.state(), CState.ACTIVE);
+    assertEq(_trigger.state(), MarketState.ACTIVE);
     assertEq(_trigger.getSets().length, 0);
     assertEq(_trigger.manager(), factory.manager());
     assertEq(_trigger.trackingOracle(), AggregatorV3Interface(usdcUsdOracleMainnet));
