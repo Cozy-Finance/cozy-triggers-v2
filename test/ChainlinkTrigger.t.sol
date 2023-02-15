@@ -7,8 +7,8 @@ import "test/utils/MockChainlinkOracle.sol";
 
 contract MockManager is ICState {
   // Any set you ask about is managed by this contract \o/.
-  function sets(ISet /* set */) external pure returns(IManager.SetData memory) {
-    return IManager.SetData(true, true, 0, 0);
+  function isSet(ISet /* set */) external pure returns(bool) {
+    return true;
   }
 }
 
@@ -62,7 +62,7 @@ abstract contract ChainlinkTriggerUnitTest is TriggerTestSetup {
       trackingFrequencyTolerance
     );
 
-    vm.prank(address(_manager));
+    vm.prank(address(set));
     trigger.addSet(set);
   }
 }
@@ -395,7 +395,7 @@ abstract contract PegProtectionTriggerUnitTest is TriggerTestSetup {
       1,
       frequencyTolerance
     );
-    vm.prank(address(_manager));
+    vm.prank(address(set));
     trigger.addSet(set);
   }
 }

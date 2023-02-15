@@ -40,8 +40,8 @@ contract TriggerTestSetup is Test, ICState {
     // By default, all sets exist.
     vm.mockCall(
       address(manager),
-      abi.encodeWithSelector(IManager.sets.selector),
-      abi.encode(true, true, 0, 0) // Set exists and is approved for backstop, config update time and deadline are zero.
+      abi.encodeWithSelector(IManager.isSet.selector),
+      abi.encode(true) // Set exists and is approved for backstop, config update time and deadline are zero.
     );
   }
 

@@ -57,9 +57,9 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
 
   /// @dev Call this method to update Set addresses after deploy. Returns false if the trigger has not been acknowledged.
   function addSet(ISet _set) external returns (bool) {
-    if (msg.sender != address(manager)) revert Unauthorized();
+    if (msg.sender != address(_set)) revert Unauthorized();
     if (!acknowledged()) revert Unacknowledged();
-    (bool _exists,,,) = manager.sets(_set);
+    bool _exists = manager.isSet(_set);
     if (!_exists) revert Unauthorized();
 
     uint256 setLength = sets.length;

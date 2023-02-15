@@ -20,11 +20,23 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     trigger.TEST_HOOK_acknowledge(true);
   }
 
-  function test_AddSetRevertsIfNotCalledFromManagerOrSet() public {
+  function test_AddSetRevertsIfNotExistingInManager() public {
+    vm.mockCall(
+      address(manager),
+      abi.encodeWithSelector(IManager.isSet.selector),
+      abi.encode(false) // Set exists and is approved for backstop, config update time and deadline are zero.
+    );
     address _caller = makeAddr("random caller");
     vm.prank(_caller);
     vm.expectRevert(BaseTrigger.Unauthorized.selector);
     trigger.addSet(ISet(_caller));
+  }
+
+  function test_AddSetRevertsIfNotCalledBySet() public {
+    address _caller = makeAddr("random caller");
+    vm.prank(_caller);
+    vm.expectRevert(BaseTrigger.Unauthorized.selector);
+    trigger.addSet(ISet(set));
   }
 
   function test_CannotAddAnotherMangersSet() public {
@@ -42,11 +54,11 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     // But it shouldn't matter since the manager doesn't know about that set.
     vm.mockCall(
       address(manager),
-      abi.encodeWithSelector(IManager.sets.selector, _imposterSet),
-      abi.encode(false /* set does not exist in manager */, true, 0, 0)
+      abi.encodeWithSelector(IManager.isSet.selector, _imposterSet),
+      abi.encode(false)
     );
 
-    vm.prank(address(trigger.manager()));
+    vm.prank(address(_imposterSet));
     vm.expectRevert(BaseTrigger.Unauthorized.selector);
     trigger.addSet(_imposterSet);
   }
@@ -56,21 +68,21 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     uint256 _setCount = trigger.getSets().length;
 
     // The call wil be successful since the set is in trigger.sets. But the set should not have been added.
-    vm.prank(address(manager));
+    vm.prank(address(_lastSetAdded));
     trigger.addSet(_lastSetAdded);
     assertEq(_setCount, trigger.getSets().length);
 
      // You can add a new set, however.
     vm.expectEmit(true, true, true, true);
     emit SetAdded(set2);
-    vm.prank(address(manager));
+    vm.prank(address(set2));
     trigger.addSet(set2);
     _setCount++;
     assertEq(_setCount, trigger.getSets().length);
     assertEq(address(trigger.sets(_setCount - 1)), address(set2));
 
      // You still cannot add a duplicate set at this point.
-    vm.prank(address(manager));
+    vm.prank(address(set2));
     trigger.addSet(set2);
     assertEq(_setCount, trigger.getSets().length);
     assertEq(address(trigger.sets(_setCount - 1)), address(set2));
@@ -86,7 +98,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     for(uint256 i; i < _maxSetCount - 1 ; i++) { // Minus 1 because there is already one ISet.
       address _newSet = makeAddr(string.concat("set", vm.toString(i))); // e.g. "set1" is the label.
 
-      vm.prank(address(manager));
+      vm.prank(address(_newSet));
       trigger.addSet(ISet(_newSet));
 
       _setCount++;
@@ -97,7 +109,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
      // If we try to add another set, it should revert.
      assertEq(trigger.MAX_SET_LENGTH(), trigger.getSets().length);
      vm.expectRevert(BaseTrigger.SetLimitReached.selector);
-     vm.prank(address(manager));
+     vm.prank(makeAddr("reverting set"));
      trigger.addSet(ISet(makeAddr("reverting set")));
   }
 
@@ -190,14 +202,14 @@ contract TriggerAcknowledged is TriggerTestSetup {
   }
 
   function test_AddSetRevertsIfUnacknowledged() public {
-    vm.prank(address(manager));
+    vm.prank(address(0xBEEF));
     vm.expectRevert(BaseTrigger.Unacknowledged.selector);
     trigger.addSet(ISet(address(0xBEEF)));
   }
 
   function test_AddSetReturnsTrueIfAcknowledged() public {
     trigger.TEST_HOOK_acknowledge(true);
-    vm.prank(address(manager));
+    vm.prank(address(0xBEEF));
     bool success = trigger.addSet(ISet(address(0xBEEF)));
     assertTrue(success);
   }

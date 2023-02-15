@@ -8,8 +8,8 @@ import "test/utils/MockChainlinkOracle.sol";
 // TODO Use `vm.mockCall` instead of a dedicated mocking contract.
 contract MockManager is ICState {
   // Any set you ask about is managed by this contract \o/.
-  function sets(ISet /* set */) external pure returns(IManager.SetData memory) {
-    return IManager.SetData(true, true, 0, 0);
+  function isSet(ISet /* set */) external pure returns(bool) {
+    return true;
   }
 
   // This is a no-op, it's not needed for these tests.
@@ -53,11 +53,11 @@ contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
 
   function _addMaxSetsToTrigger(IChainlinkTrigger _trigger) internal {
     uint256 _maxSetCount = _trigger.MAX_SET_LENGTH();
-    vm.startPrank(address(manager));
     for(uint256 i = 0; i < _maxSetCount; i++) {
-      _trigger.addSet(ISet(address(uint160(uint256(keccak256(abi.encode(i)))))));
+      address caller_ = address(uint160(uint256(keccak256(abi.encode(i)))));
+      vm.prank(caller_);
+      _trigger.addSet(ISet(caller_));
     }
-    vm.stopPrank();
   }
 }
 
