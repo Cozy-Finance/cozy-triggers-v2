@@ -24,7 +24,7 @@ contract TriggerTestSetup is Test, ICState {
   event SetAdded(ISet set);
 
   /// @dev Emitted when a trigger's state is updated.
-  event TriggerStateUpdated(CState indexed state);
+  event TriggerStateUpdated(MarketState indexed state);
 
   function setUp() public virtual {
     // Create addresses.
@@ -40,8 +40,8 @@ contract TriggerTestSetup is Test, ICState {
     // By default, all sets exist.
     vm.mockCall(
       address(manager),
-      abi.encodeWithSelector(IManager.sets.selector),
-      abi.encode(true, true, 0, 0) // Set exists and is approved for backstop, config update time and deadline are zero.
+      abi.encodeWithSelector(IManager.isSet.selector),
+      abi.encode(true) // Set exists and is approved for backstop, config update time and deadline are zero.
     );
   }
 
@@ -51,7 +51,7 @@ contract TriggerTestSetup is Test, ICState {
 
 
   // Helper methods.
-  function updateTriggerState(ITrigger _trigger, ICState.CState _val) public {
+  function updateTriggerState(ITrigger _trigger, ICState.MarketState _val) public {
     stdstore.target(address(_trigger)).sig("state()").checked_write(uint256(_val));
     assertEq(_trigger.state(), _val);
   }
@@ -68,9 +68,9 @@ contract TriggerTestSetup is Test, ICState {
     assertEq(address(a), address(b));
   }
 
-  function assertEq(ICState.CState a, ICState.CState b) internal {
+  function assertEq(ICState.MarketState a, ICState.MarketState b) internal {
     if (a != b) {
-      emit log("Error: a == b not satisfied [ICState.CState]");
+      emit log("Error: a == b not satisfied [ICState.MarketState]");
       emit log_named_uint("  Expected", uint256(b));
       emit log_named_uint("    Actual", uint256(a));
       fail();

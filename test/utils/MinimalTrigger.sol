@@ -8,16 +8,16 @@ contract MinimalTrigger is BaseTrigger {
 
   constructor(IManager _manager, ISet[] memory _sets) BaseTrigger(_manager) {
     sets = _sets;
-    state = CState.ACTIVE;
+    state = MarketState.ACTIVE;
   }
 
-  function TEST_HOOK_updateTriggerState(CState _newState) public {
+  function TEST_HOOK_updateTriggerState(MarketState _newState) public {
     _updateTriggerState(_newState);
   }
 
   function TEST_HOOK_isValidTriggerStateTransition(
-    CState _oldState,
-    CState _newState
+    MarketState _oldState,
+    MarketState _newState
   ) public returns(bool) {
     return _isValidTriggerStateTransition(_oldState, _newState);
   }

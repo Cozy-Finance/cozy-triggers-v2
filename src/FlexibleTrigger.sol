@@ -110,7 +110,7 @@ contract FlexibleTrigger is BaseTrigger {
     boss = _boss;
     maxFreezeDuration = _maxFreezeDuration;
     isAutoTrigger = _isAutoTrigger;
-    state = CState.ACTIVE;
+    state = MarketState.ACTIVE;
 
     uint256 _lenFreezers = _freezers.length; // Cache to avoid MLOAD on each loop iteration.
     for (uint256 i = 0; i < _lenFreezers;) {
@@ -134,24 +134,24 @@ contract FlexibleTrigger is BaseTrigger {
   /// @notice Transitions the trigger state from ACTIVE to FROZEN.
   function freeze() external {
     if (!freezers[msg.sender] && msg.sender != boss) revert Unauthorized();
-    if (state != CState.ACTIVE) revert InvalidStateTransition();
-    _updateTriggerState(CState.FROZEN);
+    if (state != MarketState.ACTIVE) revert InvalidStateTransition();
+    _updateTriggerState(MarketState.FROZEN);
     freezeTime = block.timestamp;
   }
 
   /// @notice Transitions the trigger state from FROZEN to ACTIVE.
   /// @dev We use a special method, instead of taking a `newState` input, to minimize the chance of
-  /// the caller passing in the wrong `CState` value.
+  /// the caller passing in the wrong `MarketState` value.
   function resume() external {
     if (msg.sender != boss) revert Unauthorized();
-    if (state != CState.FROZEN) revert InvalidStateTransition();
-    _updateTriggerState(CState.ACTIVE);
+    if (state != MarketState.FROZEN) revert InvalidStateTransition();
+    _updateTriggerState(MarketState.ACTIVE);
     freezeTime = 0;
   }
 
   /// @notice Transitions the trigger state from FROZEN to TRIGGERED
   /// @dev We use a special method, instead of taking a `newState` input, to minimize the chance of
-  /// the caller passing in the wrong `CState` value.
+  /// the caller passing in the wrong `MarketState` value.
   function trigger() external {
     if (msg.sender != boss) revert Unauthorized();
     _trigger();
@@ -168,11 +168,11 @@ contract FlexibleTrigger is BaseTrigger {
   /// required state changes both in the trigger and the sets. This method will automatically
   /// transition the trigger state to TRIGGERED when `isAutoTrigger` is true, and transition it to
   /// FROZEN when `isAutoTrigger` is false.
-  function runProgrammaticCheck() external returns (CState) {
+  function runProgrammaticCheck() external returns (MarketState) {
     // Rather than revert if not active, we simply return the state and exit. Both behaviors are
     // acceptable, but returning is friendlier to the caller as they don't need to handle a revert
     // and can simply parse the transaction's logs to know if the call resulted in a state change.
-    if (state != CState.ACTIVE) return state;
+    if (state != MarketState.ACTIVE) return state;
 
     bool _wasConditionMet = programmaticCheck();
 
@@ -180,8 +180,8 @@ contract FlexibleTrigger is BaseTrigger {
     if (!_wasConditionMet) return state;
 
     // Otherwise, we toggle state accordingly.
-    CState _newState = isAutoTrigger ? CState.TRIGGERED : CState.FROZEN;
-    if (_newState == CState.FROZEN) freezeTime = block.timestamp;
+    MarketState _newState = isAutoTrigger ? MarketState.TRIGGERED : MarketState.FROZEN;
+    if (_newState == MarketState.FROZEN) freezeTime = block.timestamp;
     _updateTriggerState(_newState);
 
     return state;
@@ -195,8 +195,8 @@ contract FlexibleTrigger is BaseTrigger {
 
   /// @notice Executes logic to transition the trigger into the triggered state if the trigger is currently frozen.
   function _trigger() internal {
-    if (state != CState.FROZEN) revert InvalidStateTransition();
-    _updateTriggerState(CState.TRIGGERED);
+    if (state != MarketState.FROZEN) revert InvalidStateTransition();
+    _updateTriggerState(MarketState.TRIGGERED);
     freezeTime = 0;
   }
 }

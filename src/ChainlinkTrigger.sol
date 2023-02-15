@@ -101,13 +101,13 @@ contract ChainlinkTrigger is BaseTrigger {
   /// @notice Compares the oracle's price to the reference oracle and toggles the trigger if required.
   /// @dev This method executes the `programmaticCheck()` and makes the
   /// required state changes both in the trigger and the sets.
-  function runProgrammaticCheck() public returns (CState) {
+  function runProgrammaticCheck() public returns (MarketState) {
     // Rather than revert if not active, we simply return the state and exit.
     // Both behaviors are acceptable, but returning is friendlier to the caller
     // as they don't need to handle a revert and can simply parse the
     // transaction's logs to know if the call resulted in a state change.
-    if (state != CState.ACTIVE) return state;
-    if (programmaticCheck()) return _updateTriggerState(CState.TRIGGERED);
+    if (state != MarketState.ACTIVE) return state;
+    if (programmaticCheck()) return _updateTriggerState(MarketState.TRIGGERED);
     return state;
   }
 
