@@ -3,9 +3,18 @@ pragma solidity 0.8.16;
 
 import "forge-std/Test.sol";
 import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "cozy-v2-interfaces/interfaces/IBaseTrigger.sol";
+import "src/interfaces/IBaseTrigger.sol";
 
-contract TriggerTestSetup is Test, ICState {
+// import {IBaseTrigger} from "src/interfaces/IBaseTrigger.sol";
+import {ICostModel} from "src/interfaces/ICostModel.sol";
+import {IERC20} from "src/interfaces/IERC20.sol";
+// import {IManager} from "src/interfaces/IManager.sol";
+// import {ISet} from "src/interfaces/ISet.sol";
+// import {ITrigger} from "src/interfaces/ITrigger.sol";
+import {SetConfig} from "src/structs/Configs.sol";
+import {MarketState} from "src/structs/StateEnums.sol";
+
+contract TriggerTestSetup is Test {
   using stdStorage for StdStorage;
 
   bytes32 constant salt = bytes32(uint256(1234)); // Arbitrary default salt value.
@@ -51,7 +60,7 @@ contract TriggerTestSetup is Test, ICState {
 
 
   // Helper methods.
-  function updateTriggerState(ITrigger _trigger, ICState.MarketState _val) public {
+  function updateTriggerState(ITrigger _trigger, MarketState _val) public {
     stdstore.target(address(_trigger)).sig("state()").checked_write(uint256(_val));
     assertEq(_trigger.state(), _val);
   }
@@ -68,9 +77,9 @@ contract TriggerTestSetup is Test, ICState {
     assertEq(address(a), address(b));
   }
 
-  function assertEq(ICState.MarketState a, ICState.MarketState b) internal {
+  function assertEq(MarketState a, MarketState b) internal {
     if (a != b) {
-      emit log("Error: a == b not satisfied [ICState.MarketState]");
+      emit log("Error: a == b not satisfied [MarketState]");
       emit log_named_uint("  Expected", uint256(b));
       emit log_named_uint("    Actual", uint256(a));
       fail();

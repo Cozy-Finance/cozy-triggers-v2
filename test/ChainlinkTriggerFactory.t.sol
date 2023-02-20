@@ -4,9 +4,11 @@ pragma solidity 0.8.16;
 import "src/ChainlinkTriggerFactory.sol";
 import "test/utils/TriggerTestSetup.sol";
 import "test/utils/MockChainlinkOracle.sol";
+import {MarketState} from "src/structs/StateEnums.sol";
+import {TriggerMetadata} from "src/structs/Triggers.sol";
 
 // TODO Use `vm.mockCall` instead of a dedicated mocking contract.
-contract MockManager is ICState {
+contract MockManager {
   // Any set you ask about is managed by this contract \o/.
   function isSet(ISet /* set */) external pure returns(bool) {
     return true;
@@ -105,7 +107,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
       0.1e4, // priceTolerance.
       45, // truthFrequencyTolerance.
       45, // trackingFrequencyTolerance
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -143,7 +145,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         _priceTolerance,
         _truthFrequencyTolerance,
         _trackingFrequencyTolerance,
-        IChainlinkTriggerFactory.TriggerMetadata(
+        TriggerMetadata(
           "Chainlink Trigger",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
@@ -158,7 +160,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         AggregatorV3Interface(_trackingOracle),
         _priceTolerance,
         _trackingFrequencyTolerance,
-        IChainlinkTriggerFactory.TriggerMetadata(
+        TriggerMetadata(
           "Peg Protection Trigger",
           "A trigger that protects from something depegging",
           "https://via.placeholder.com/150"
@@ -233,7 +235,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -291,7 +293,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -321,7 +323,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -336,7 +338,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -363,7 +365,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -378,7 +380,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -411,7 +413,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -496,7 +498,7 @@ contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
       _priceTolerance,
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Chainlink Trigger",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
@@ -535,7 +537,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         _priceTolerance,
         _truthFrequencyTolerance,
         _trackingFrequencyTolerance,
-        IChainlinkTriggerFactory.TriggerMetadata(
+        TriggerMetadata(
           "Chainlink Trigger",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
@@ -574,7 +576,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         _priceTolerance,
         _truthFrequencyTolerance,
         _trackingFrequencyTolerance,
-        IChainlinkTriggerFactory.TriggerMetadata(
+        TriggerMetadata(
           "Chainlink Trigger",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
@@ -603,7 +605,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.001e4, // 0.1% price tolerance.
       60, // 60s frequency tolerance.
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -631,7 +633,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.001e4, // 0.1% price tolerance.
       60, // 60s frequency tolerance.
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -644,7 +646,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.042e4, // 4.2% price tolerance.
       360, // 360s frequency tolerance.
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
@@ -660,7 +662,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       AggregatorV3Interface(usdcUsdOracleMainnet),
       0.042e4, // 4.2% price tolerance.
       360, // 360s frequency tolerance.
-      IChainlinkTriggerFactory.TriggerMetadata(
+      TriggerMetadata(
         "Peg Protection Trigger",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"

@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 // same implementation. For example, if a file in the cozy-v2-interfaces submodule that is imported in this project
 // imports an IERC20 interface with "import src/interfaces/IERC20.sol;", but in this project we import the same
 // interface with "import cozy-v2-interfaces/interfaces/IERC20.sol;", a DeclarationError will be thrown.
-import { IERC20 as CozyIERC20 } from "cozy-v2-interfaces/interfaces/IERC20.sol";
+import { IERC20 as CozyIERC20 } from "src/interfaces/IERC20.sol";
 import "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 
 /**

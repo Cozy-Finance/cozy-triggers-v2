@@ -1,39 +1,51 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity 0.8.16;
+pragma solidity ^0.8.0;
 
-import "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "src/interfaces/IChainlinkTriggerFactory.sol";
-import "src/ChainlinkTrigger.sol";
-import "src/FixedPriceAggregator.sol";
+import {AggregatorV3Interface} from "chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {IChainlinkTrigger} from "src/interfaces/IChainlinkTrigger.sol";
+import {IManager} from "src/interfaces/IManager.sol";
+import {TriggerMetadata} from "src/structs/Triggers.sol";
 
 /**
  * @notice Deploys Chainlink triggers that ensure two oracles stay within the given price
  * tolerance. It also supports creating a fixed price oracle to use as the truth oracle, useful
  * for e.g. ensuring stablecoins maintain their peg.
  */
-contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
+interface IChainlinkTriggerFactory {
+  /// @dev Emitted when the factory deploys a trigger.
+  /// @param trigger Address at which the trigger was deployed.
+  /// @param triggerConfigId Unique identifier of the trigger based on its configuration.
+  /// @param truthOracle The address of the desired truthOracle for the trigger.
+  /// @param trackingOracle The address of the desired trackingOracle for the trigger.
+  /// @param priceTolerance The priceTolerance that the deployed trigger will have. See
+  /// `ChainlinkTrigger.priceTolerance()` for more information.
+  /// @param truthFrequencyTolerance The frequencyTolerance that the deployed trigger will have for the truth oracle. See
+  /// `ChainlinkTrigger.truthFrequencyTolerance()` for more information.
+  /// @param trackingFrequencyTolerance The frequencyTolerance that the deployed trigger will have for the tracking oracle. See
+  /// `ChainlinkTrigger.trackingFrequencyTolerance()` for more information.
+  /// @param name The name that should be used for markets that use the trigger.
+  /// @param description A human-readable description of the trigger.
+  /// @param logoURI The URI of a logo image to represent the trigger.
+  /// For other attributes, see the docs for the params of `deployTrigger` in
+  /// this contract.
+  event TriggerDeployed(
+    address trigger,
+    bytes32 indexed triggerConfigId,
+    address indexed truthOracle,
+    address indexed trackingOracle,
+    uint256 priceTolerance,
+    uint256 truthFrequencyTolerance,
+    uint256 trackingFrequencyTolerance,
+    string name,
+    string description,
+    string logoURI
+  );
+
   /// @notice The manager of the Cozy protocol.
-  IManager public immutable manager;
+  function manager() external view returns (IManager);
 
   /// @notice Maps the triggerConfigId to the number of triggers created with those configs.
-  mapping(bytes32 => uint256) public triggerCount;
-
-  // We use a fixed salt because:
-  //   (a) FixedPriceAggregators are just static, owner-less contracts,
-  //   (b) there are no risks of bad actors taking them over on other chains,
-  //   (c) it would be nice to have these aggregators deployed to the same
-  //       address on each chain, and
-  //   (d) it saves gas.
-  // This is just the 32 bytes you get when you keccak256(abi.encode(42)).
-  bytes32 internal constant FIXED_PRICE_ORACLE_SALT = 0xbeced09521047d05b8960b7e7bcc1d1292cf3e4b2a6b63f48335cbde5f7545d2;
-
-  /// @param _manager Address of the Cozy protocol manager.
-  constructor(IManager _manager) {
-    manager = _manager;
-  }
-
-  /// @dev Thrown when the truthOracle and trackingOracle prices cannot be directly compared.
-  error InvalidOraclePair();
+  function triggerCount(bytes32) external view returns (uint256);
 
   /// @notice Call this function to deploy a ChainlinkTrigger.
   /// @param _truthOracle The address of the desired truthOracle for the trigger.
@@ -44,7 +56,6 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
   /// have for the truth oracle. See ChainlinkTrigger.truthFrequencyTolerance() for more information.
   /// @param _trackingFrequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
-  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     AggregatorV3Interface _truthOracle,
     AggregatorV3Interface _trackingOracle,
@@ -52,45 +63,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance,
     TriggerMetadata memory _metadata
-  ) public returns (IChainlinkTrigger _trigger) {
-    if (_truthOracle.decimals() != _trackingOracle.decimals()) revert InvalidOraclePair();
-
-    bytes32 _configId = triggerConfigId(
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
-    );
-
-    uint256 _triggerCount = triggerCount[_configId]++;
-
-    // We use _triggerCount as the salt so that the address is the same across chains for
-    // trigger contracts deployed with the same parameters.
-    bytes32 _salt = _getSalt(_triggerCount);
-
-    _trigger = IChainlinkTrigger(address(new ChainlinkTrigger{salt: _salt}(
-      manager,
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
-    )));
-
-    emit TriggerDeployed(
-      address(_trigger),
-      _configId,
-      address(_truthOracle),
-      address(_trackingOracle),
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance,
-      _metadata.name,
-      _metadata.description,
-      _metadata.logoURI
-    );
-  }
+  ) external returns (IChainlinkTrigger _trigger);
 
   /// @notice Call this function to deploy a ChainlinkTrigger with a
   /// FixedPriceAggregator as its truthOracle. This is useful if you were
@@ -104,7 +77,6 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
   /// have. See ChainlinkTrigger.priceTolerance() for more information.
   /// @param _frequencyTolerance The frequency tolerance that the deployed trigger will
   /// have for the tracking oracle. See ChainlinkTrigger.trackingFrequencyTolerance() for more information.
-  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     int256 _price,
     uint8 _decimals,
@@ -112,21 +84,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _priceTolerance,
     uint256 _frequencyTolerance,
     TriggerMetadata memory _metadata
-  ) public returns (IChainlinkTrigger _trigger) {
-    AggregatorV3Interface _truthOracle = deployFixedPriceAggregator(_price, _decimals);
-
-    return deployTrigger(
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      // For the truth FixedPriceAggregator peg oracle, we use a frequency
-      // tolerance of 0 since it should always return block.timestamp as the
-      // updatedAt timestamp.
-      0,
-      _frequencyTolerance,
-      _metadata
-    );
-  }
+  ) external returns (IChainlinkTrigger _trigger);
 
   /// @notice Call this function to determine the address at which a trigger
   /// with the supplied configuration would be deployed.
@@ -148,29 +106,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance,
     uint256 _triggerCount
-  ) public view returns(address _address) {
-    bytes memory _triggerConstructorArgs = abi.encode(
-      manager,
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
-    );
-
-    // https://eips.ethereum.org/EIPS/eip-1014
-    bytes32 _bytecodeHash = keccak256(
-      bytes.concat(
-        type(ChainlinkTrigger).creationCode,
-        _triggerConstructorArgs
-      )
-    );
-    // We use _triggerCount as the salt so that the address is the same across chains for
-    // trigger contracts deployed with the same parameters.
-    bytes32 _salt = _getSalt(_triggerCount);
-    bytes32 _data = keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), _salt, _bytecodeHash));
-    _address = address(uint160(uint256(_data)));
-  }
+  ) external view returns (address _address);
 
   /// @notice Call this function to find triggers with the specified
   /// configurations that can be used for new markets in Sets.
@@ -191,35 +127,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _priceTolerance,
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
-  ) public view returns(address) {
-
-    bytes32 _counterId = triggerConfigId(
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
-    );
-    uint256 _triggerCount = triggerCount[_counterId];
-
-    for (uint256 i = 0; i < _triggerCount; i++) {
-      address _computedAddr = computeTriggerAddress(
-        _truthOracle,
-        _trackingOracle,
-        _priceTolerance,
-        _truthFrequencyTolerance,
-        _trackingFrequencyTolerance,
-        i
-      );
-
-      ChainlinkTrigger _trigger = ChainlinkTrigger(_computedAddr);
-      if (_trigger.getSetsLength() < _trigger.MAX_SET_LENGTH()) {
-        return _computedAddr;
-      }
-    }
-
-    return address(0); // If none is found, return zero address.
-  }
+  ) external view returns (address);
 
   /// @notice Call this function to determine the identifier of the supplied trigger
   /// configuration. This identifier is used both to track the number of
@@ -239,17 +147,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _priceTolerance,
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
-  ) public view returns (bytes32) {
-    bytes memory _triggerConstructorArgs = abi.encode(
-      manager,
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
-    );
-    return keccak256(_triggerConstructorArgs);
-  }
+  ) external view returns (bytes32);
 
   /// @notice Call this function to deploy a FixedPriceAggregator contract,
   /// which behaves like a Chainlink oracle except that it always returns the
@@ -258,42 +156,11 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
   /// instead of reverting to avoid duplicate aggregators
   /// @param _price The fixed price, in the decimals indicated, returned by the deployed oracle.
   /// @param _decimals The number of decimals of the fixed price.
-  function deployFixedPriceAggregator(
-    int256 _price, // An int (instead of uint256) because that's what's used by Chainlink.
-    uint8 _decimals
-  ) public returns (AggregatorV3Interface) {
-    address _oracleAddress = computeFixedPriceAggregatorAddress(_price, _decimals);
-    if (_oracleAddress.code.length > 0) return AggregatorV3Interface(_oracleAddress);
-    return new FixedPriceAggregator{salt: FIXED_PRICE_ORACLE_SALT}(_decimals, _price);
-  }
+  function deployFixedPriceAggregator(int256 _price, uint8 _decimals) external returns (AggregatorV3Interface);
 
   /// @notice Call this function to compute the address that a
   /// FixedPriceAggregator contract would be deployed to with the provided args.
   /// @param _price The fixed price, in the decimals indicated, returned by the deployed oracle.
   /// @param _decimals The number of decimals of the fixed price.
-  function computeFixedPriceAggregatorAddress(
-    int256 _price, // An int (instead of uint256) because that's what's used by Chainlink.
-    uint8 _decimals
-  ) public view returns (address) {
-    bytes memory _aggregatorConstructorArgs = abi.encode(_decimals, _price);
-    bytes32 _bytecodeHash = keccak256(
-      bytes.concat(
-        type(FixedPriceAggregator).creationCode,
-        _aggregatorConstructorArgs
-      )
-    );
-    bytes32 _data = keccak256(
-      bytes.concat(
-        bytes1(0xff),
-        bytes20(address(this)),
-        FIXED_PRICE_ORACLE_SALT,
-        _bytecodeHash
-      )
-    );
-    return address(uint160(uint256(_data)));
-  }
-
-  function _getSalt(uint256 _triggerCount) private pure returns (bytes32) {
-    return keccak256(bytes.concat(bytes32(_triggerCount)));
-  }
+  function computeFixedPriceAggregatorAddress(int256 _price, uint8 _decimals) external view returns (address);
 }

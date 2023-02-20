@@ -117,7 +117,7 @@ contract DeployChainlinkTriggers is ScriptUtils {
           _metadata.priceTolerance,
           _metadata.truthFrequencyTolerance,
           _metadata.trackingFrequencyTolerance,
-          IChainlinkTriggerFactory.TriggerMetadata(
+          TriggerMetadata(
             _metadata.name,
             _metadata.description,
             _metadata.logoURI

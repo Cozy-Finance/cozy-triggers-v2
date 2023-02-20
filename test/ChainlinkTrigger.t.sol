@@ -4,15 +4,16 @@ pragma solidity 0.8.16;
 import "src/ChainlinkTrigger.sol";
 import "test/utils/TriggerTestSetup.sol";
 import "test/utils/MockChainlinkOracle.sol";
+import {MarketState} from "src/structs/StateEnums.sol";
 
-contract MockManager is ICState {
+contract MockManager {
   // Any set you ask about is managed by this contract \o/.
   function isSet(ISet /* set */) external pure returns(bool) {
     return true;
   }
 }
 
-contract MockSet is ICState {
+contract MockSet {
   // no-op for testing
   function updateMarketState(MarketState) external {}
 }
