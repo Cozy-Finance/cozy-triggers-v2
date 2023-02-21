@@ -4,7 +4,7 @@ pragma solidity 0.8.16;
 import "test/utils/MinimalTrigger.sol";
 import "test/utils/TriggerTestSetup.sol";
 
-contract MockSet is ICState {
+contract MockSet {
   // no-op for testing
   function updateMarketState(MarketState) external {}
 }
@@ -91,9 +91,6 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
   function test_CannotDOSTheTriggerWithSets() public {
     uint256 _setCount = trigger.getSets().length;
     uint256 _maxSetCount = trigger.MAX_SET_LENGTH();
-
-     MarketInfo[] memory _marketInfoSingleMarket = new MarketInfo[](1);
-     _marketInfoSingleMarket[0] = MarketInfo(address(trigger), costModel, 10000, 0);
 
     for(uint256 i; i < _maxSetCount - 1 ; i++) { // Minus 1 because there is already one ISet.
       address _newSet = makeAddr(string.concat("set", vm.toString(i))); // e.g. "set1" is the label.

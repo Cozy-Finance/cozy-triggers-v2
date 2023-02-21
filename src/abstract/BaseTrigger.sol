@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.16;
 
-import "cozy-v2-interfaces/interfaces/IBaseTrigger.sol";
+import {IBaseTrigger} from "src/interfaces/IBaseTrigger.sol";
+import {IManager} from "src/interfaces/IManager.sol";
+import {ISet} from "src/interfaces/ISet.sol";
+import {MarketState} from "src/structs/StateEnums.sol";
 
 /**
  * @dev Core trigger interface and implementation. All triggers should inherit from this to ensure they conform
  * to the required trigger interface.
  */
-abstract contract BaseTrigger is ICState, IBaseTrigger {
+abstract contract BaseTrigger is IBaseTrigger {
   /// @notice Current trigger state.
   MarketState public state;
 
@@ -59,7 +62,7 @@ abstract contract BaseTrigger is ICState, IBaseTrigger {
   function addSet(ISet _set) external returns (bool) {
     if (msg.sender != address(_set)) revert Unauthorized();
     if (!acknowledged()) revert Unacknowledged();
-    bool _exists = manager.isSet(_set);
+    bool _exists = manager.isSet(address(_set));
     if (!_exists) revert Unauthorized();
 
     uint256 setLength = sets.length;

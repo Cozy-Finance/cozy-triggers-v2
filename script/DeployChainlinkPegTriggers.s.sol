@@ -123,7 +123,7 @@ contract DeployChainlinkPegTriggers is ScriptUtils {
           _metadata.trackingOracle,
           _metadata.priceTolerance,
           _metadata.frequencyTolerance,
-          IChainlinkTriggerFactory.TriggerMetadata(
+          TriggerMetadata(
             _metadata.name,
             _metadata.description,
             _metadata.logoURI
