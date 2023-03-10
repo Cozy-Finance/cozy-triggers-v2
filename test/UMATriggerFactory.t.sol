@@ -35,6 +35,8 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     string logoURI
   );
 
+  event ProposalDisputed();
+
   function setUp() public virtual override {
     refundRecipient = address(this);
     super.setUp();
@@ -311,6 +313,8 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
       deal(address(rewardToken), _vars.disputer, _vars.bondAmount + _vars.umaRequest.finalFee);
       vm.startPrank(_vars.disputer);
       rewardToken.approve(address(umaOracle), _vars.bondAmount + _vars.umaRequest.finalFee);
+      vm.expectEmit(true, true, true, true);
+      emit ProposalDisputed();
       umaOracle.disputePrice(
         address(_vars.trigger),
         queryIdentifier,
@@ -443,7 +447,7 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     assertEq(_umaRequest.requestSettings.eventBased, true);
     assertEq(_umaRequest.requestSettings.refundOnDispute, true);
     assertEq(_umaRequest.requestSettings.callbackOnPriceProposed, true);
-    assertEq(_umaRequest.requestSettings.callbackOnPriceDisputed, false);
+    assertEq(_umaRequest.requestSettings.callbackOnPriceDisputed, true);
     assertEq(_umaRequest.requestSettings.callbackOnPriceSettled, true);
     assertEq(_umaRequest.requestSettings.bond, _bondAmount);
     assertEq(_umaRequest.requestSettings.customLiveness, _proposalDisputeWindow);

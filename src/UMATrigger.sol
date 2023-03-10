@@ -100,6 +100,11 @@ contract UMATrigger is BaseTrigger {
   /// @dev Thrown when the trigger attempts to settle an unsettleable UMA request.
   error Unsettleable();
 
+  /// @dev Emitted when an answer proposed to the submitted query is disputed
+  /// and a request is sent to the DVM for dispute resolution by UMA tokenholders
+  /// via voting.
+  event ProposalDisputed();
+
   /// @dev UMA expects answers to be denominated as wads. So, e.g., a p3 answer
   /// of 0.5 would be represented as 0.5e18.
   int256 internal constant AFFIRMATIVE_ANSWER = 1e18;
@@ -186,7 +191,7 @@ contract UMATrigger is BaseTrigger {
       requestTimestamp,
       bytes(query),
       true,  // Enable the answer-proposed callback.
-      false, // Don't enable the answer-disputed callback.
+      true, // Enable the answer-disputed callback.
       true   // Enable the answer-settled callback.
     );
   }
@@ -270,6 +275,28 @@ contract UMATrigger is BaseTrigger {
       _submitRequestToOracle();
     }
   }
+
+  /// @notice UMA callback for disputes. This code is run when the answer
+  /// proposed to the query is disputed.
+  /// @param _identifier price identifier being requested.
+  /// @param _timestamp timestamp of the original query request.
+  /// @param _ancillaryData ancillary data of the original query request.
+  function priceDisputed(
+    bytes32 _identifier,
+    uint256 _timestamp,
+    bytes memory _ancillaryData,
+    uint256 /* _refund */
+) external {
+  // See `priceProposed` for why we authorize callers in this way.
+  if (
+    msg.sender != address(oracle) ||
+    _timestamp != requestTimestamp ||
+    keccak256(_ancillaryData) != keccak256(bytes(query)) ||
+    _identifier != queryIdentifier
+  ) revert Unauthorized();
+
+  emit ProposalDisputed();
+}
 
   /// @notice This function attempts to confirm and finalize (i.e. "settle") the
   /// answer to the query with the UMA oracle. It reverts with Unsettleable if
