@@ -37,6 +37,8 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
 
   event ProposalDisputed();
 
+  event QueryResubmitted();
+
   function setUp() public virtual override {
     refundRecipient = address(this);
     super.setUp();
@@ -344,6 +346,10 @@ contract DeployTriggerSharedTest is TriggerTestSetup {
     _vars.initDeployerBalance = rewardToken.balanceOf(_vars.deployer);
 
     if (_isExternallySettled) {
+      if (_settledAnswer != AFFIRMATIVE_ANSWER) {
+        vm.expectEmit(true, true, true, true);
+        emit QueryResubmitted();
+      }
       // Call settle on the UMA contract.
       vm.prank(_vars.settler);
       umaOracle.settle(
