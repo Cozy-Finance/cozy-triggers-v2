@@ -105,6 +105,11 @@ contract UMATrigger is BaseTrigger {
   /// via voting.
   event ProposalDisputed();
 
+  /// @dev Emitted when the query is resubmitted after a dispute resolution results
+  /// in the proposed answer being rejected (so, the market returns to the active
+  /// state).
+  event QueryResubmitted();
+
   /// @dev UMA expects answers to be denominated as wads. So, e.g., a p3 answer
   /// of 0.5 would be represented as 0.5e18.
   int256 internal constant AFFIRMATIVE_ANSWER = 1e18;
@@ -273,6 +278,7 @@ contract UMATrigger is BaseTrigger {
       // the future.
       _updateTriggerState(MarketState.ACTIVE);
       _submitRequestToOracle();
+      emit QueryResubmitted();
     }
   }
 
