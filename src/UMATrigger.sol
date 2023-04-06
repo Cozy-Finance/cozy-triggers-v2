@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.16;
 
-import 'src/abstract/BaseTrigger.sol';
+import "src/abstract/BaseTrigger.sol";
 import "src/interfaces/OptimisticOracleV2Interface.sol";
 import "src/lib/SafeTransferLib.sol";
 
@@ -153,7 +153,8 @@ contract UMATrigger is BaseTrigger {
     _submitRequestToOracle();
   }
 
-  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger
+  /// state.
   /// @notice UMA triggers are managed by the UMA decentralized voting system, so this always returns true.
   function acknowledged() public pure override returns (bool) {
     return true;
@@ -168,13 +169,7 @@ contract UMATrigger is BaseTrigger {
     // The UMA function for submitting a query to the oracle is `requestPrice`
     // even though not all queries are price queries. Another name for this
     // function might have been `requestAnswer`.
-    oracle.requestPrice(
-      queryIdentifier,
-      requestTimestamp,
-      bytes(query),
-      rewardToken,
-      _rewardAmount
-    );
+    oracle.requestPrice(queryIdentifier, requestTimestamp, bytes(query), rewardToken, _rewardAmount);
 
     // Set this as an event-based query so that no one can propose the "too
     // soon" answer and so that we automatically get the reward back if there
@@ -195,9 +190,9 @@ contract UMATrigger is BaseTrigger {
       queryIdentifier,
       requestTimestamp,
       bytes(query),
-      true,  // Enable the answer-proposed callback.
+      true, // Enable the answer-proposed callback.
       true, // Enable the answer-disputed callback.
-      true   // Enable the answer-settled callback.
+      true // Enable the answer-settled callback.
     );
   }
 
@@ -213,11 +208,7 @@ contract UMATrigger is BaseTrigger {
   /// @param _identifier price identifier being requested.
   /// @param _timestamp timestamp of the original query request.
   /// @param _ancillaryData ancillary data of the original query request.
-  function priceProposed(
-    bytes32 _identifier,
-    uint256 _timestamp,
-    bytes memory _ancillaryData
-  ) external {
+  function priceProposed(bytes32 _identifier, uint256 _timestamp, bytes memory _ancillaryData) external {
     // Besides confirming that the caller is the UMA oracle, we also confirm
     // that the args passed in match the args used to submit our latest query to
     // UMA. This is done as an extra safeguard that we are responding to an
@@ -226,10 +217,8 @@ contract UMATrigger is BaseTrigger {
     // only with respect to timestamp. So we want to make sure we know which
     // query the answer is for.
     if (
-      msg.sender != address(oracle) ||
-      _timestamp != requestTimestamp ||
-      keccak256(_ancillaryData) != keccak256(bytes(query)) ||
-      _identifier != queryIdentifier
+      msg.sender != address(oracle) || _timestamp != requestTimestamp
+        || keccak256(_ancillaryData) != keccak256(bytes(query)) || _identifier != queryIdentifier
     ) revert Unauthorized();
 
     OptimisticOracleV2Interface.Request memory _umaRequest;
@@ -252,19 +241,11 @@ contract UMATrigger is BaseTrigger {
   /// @param _timestamp timestamp of the original query request.
   /// @param _ancillaryData ancillary data of the original query request.
   /// @param _answer the oracle's answer to the query.
-  function priceSettled(
-    bytes32 _identifier,
-    uint256 _timestamp,
-    bytes memory _ancillaryData,
-    int256 _answer
-  ) external {
-
+  function priceSettled(bytes32 _identifier, uint256 _timestamp, bytes memory _ancillaryData, int256 _answer) external {
     // See `priceProposed` for why we authorize callers in this way.
     if (
-      msg.sender != address(oracle) ||
-      _timestamp != requestTimestamp ||
-      keccak256(_ancillaryData) != keccak256(bytes(query)) ||
-      _identifier != queryIdentifier
+      msg.sender != address(oracle) || _timestamp != requestTimestamp
+        || keccak256(_ancillaryData) != keccak256(bytes(query)) || _identifier != queryIdentifier
     ) revert Unauthorized();
 
     if (_answer == AFFIRMATIVE_ANSWER) {
@@ -287,22 +268,17 @@ contract UMATrigger is BaseTrigger {
   /// @param _identifier price identifier being requested.
   /// @param _timestamp timestamp of the original query request.
   /// @param _ancillaryData ancillary data of the original query request.
-  function priceDisputed(
-    bytes32 _identifier,
-    uint256 _timestamp,
-    bytes memory _ancillaryData,
-    uint256 /* _refund */
-) external {
-  // See `priceProposed` for why we authorize callers in this way.
-  if (
-    msg.sender != address(oracle) ||
-    _timestamp != requestTimestamp ||
-    keccak256(_ancillaryData) != keccak256(bytes(query)) ||
-    _identifier != queryIdentifier
-  ) revert Unauthorized();
+  function priceDisputed(bytes32 _identifier, uint256 _timestamp, bytes memory _ancillaryData, uint256 /* _refund */ )
+    external
+  {
+    // See `priceProposed` for why we authorize callers in this way.
+    if (
+      msg.sender != address(oracle) || _timestamp != requestTimestamp
+        || keccak256(_ancillaryData) != keccak256(bytes(query)) || _identifier != queryIdentifier
+    ) revert Unauthorized();
 
-  emit ProposalDisputed();
-}
+    emit ProposalDisputed();
+  }
 
   /// @notice This function attempts to confirm and finalize (i.e. "settle") the
   /// answer to the query with the UMA oracle. It reverts with Unsettleable if
@@ -317,33 +293,19 @@ contract UMATrigger is BaseTrigger {
     // transaction's logs to know if the call resulted in a state change.
     if (state == MarketState.TRIGGERED) return state;
 
-    bool _oracleHasPrice = oracle.hasPrice(
-      address(this),
-      queryIdentifier,
-      requestTimestamp,
-      bytes(query)
-    );
+    bool _oracleHasPrice = oracle.hasPrice(address(this), queryIdentifier, requestTimestamp, bytes(query));
 
     if (!_oracleHasPrice) revert Unsettleable();
 
-    OptimisticOracleV2Interface.Request memory _umaRequest = oracle.getRequest(
-      address(this),
-      queryIdentifier,
-      requestTimestamp,
-      bytes(query)
-    );
+    OptimisticOracleV2Interface.Request memory _umaRequest =
+      oracle.getRequest(address(this), queryIdentifier, requestTimestamp, bytes(query));
     if (!_umaRequest.settled) {
       // Give the reward balance to the caller to make up for gas costs and
       // incentivize keeping markets in line with trigger state.
       refundRecipient = msg.sender;
 
       // `settle` will cause the oracle to call the trigger's `priceSettled` function.
-      oracle.settle(
-        address(this),
-        queryIdentifier,
-        requestTimestamp,
-        bytes(query)
-      );
+      oracle.settle(address(this), queryIdentifier, requestTimestamp, bytes(query));
     }
 
     // If the request settled as a result of this call, trigger.state will have

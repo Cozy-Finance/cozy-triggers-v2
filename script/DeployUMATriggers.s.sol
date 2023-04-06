@@ -5,34 +5,34 @@ import "script/ScriptUtils.sol";
 import "src/UMATriggerFactory.sol";
 
 /**
-  * @notice Purpose: Local deploy, testing, and production.
-  *
-  * This script deploys UMA triggers for testing using an UMATriggerFactory.
-  * Before executing, the input json file `script/input/<chain-id>/deploy-uma-triggers-<test or production>.json`
-  * should be reviewed.
-  *
-  * To run this script:
-  *
-  * ```sh
-  * # Start anvil, forking from the current state of the desired chain.
-  * anvil --fork-url $OPTIMISM_RPC_URL
-  *
-  * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployUMATriggers.s.sol \
-  *   --sig "run(string)" "deploy-uma-triggers-<test or production>" \
-  *   --rpc-url "http://127.0.0.1:8545" \
-  *   -vvvv
-  *
-  * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployUMATriggers.s.sol \
-  *   --sig "run(string)" "deploy-uma-triggers-<test or production>" \
-  *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
-  *   --etherscan-api-key $ETHERSCAN_KEY \
-  *   --verify \
-  *   --broadcast \
-  *   -vvvv
-  * ```
+ * @notice Purpose: Local deploy, testing, and production.
+ *
+ * This script deploys UMA triggers for testing using an UMATriggerFactory.
+ * Before executing, the input json file `script/input/<chain-id>/deploy-uma-triggers-<test or production>.json`
+ * should be reviewed.
+ *
+ * To run this script:
+ *
+ * ```sh
+ * # Start anvil, forking from the current state of the desired chain.
+ * anvil --fork-url $OPTIMISM_RPC_URL
+ *
+ * # In a separate terminal, perform a dry run the script.
+ * forge script script/DeployUMATriggers.s.sol \
+ *   --sig "run(string)" "deploy-uma-triggers-<test or production>" \
+ *   --rpc-url "http://127.0.0.1:8545" \
+ *   -vvvv
+ *
+ * # Or, to broadcast transactions with etherscan verification.
+ * forge script script/DeployUMATriggers.s.sol \
+ *   --sig "run(string)" "deploy-uma-triggers-<test or production>" \
+ *   --rpc-url "http://127.0.0.1:8545" \
+ *   --private-key $OWNER_PRIVATE_KEY \
+ *   --etherscan-api-key $ETHERSCAN_KEY \
+ *   --verify \
+ *   --broadcast \
+ *   -vvvv
+ * ```
  */
 contract DeployUmaTriggers is ScriptUtils {
   using stdJson for string;
@@ -45,6 +45,8 @@ contract DeployUmaTriggers is ScriptUtils {
   struct UMAMetadata {
     // It's recommended that the bond be at least twice as high as the reward.
     uint256 bondAmount;
+    // The category of the trigger.
+    string category;
     // A human-readable description of the intent of the trigger, as it should appear within the Cozy user interface.
     string description;
     // Logo uri that describes the trigger, as it should appear within the Cozy user interface.
@@ -60,7 +62,8 @@ contract DeployUmaTriggers is ScriptUtils {
     // The amount of reward tokens to pay to users that propose answers to the query.
     uint256 rewardAmount;
     // The token used to pay the reward to users that propose answers to the query. The reward token must be approved
-    // by UMA governance. Approved tokens can be found with the UMA AddressWhitelist contract on each chain supported by UMA.
+    // by UMA governance. Approved tokens can be found with the UMA AddressWhitelist contract on each chain supported by
+    // UMA.
     CozyIERC20 rewardToken;
   }
 
@@ -79,7 +82,7 @@ contract DeployUmaTriggers is ScriptUtils {
 
     UMAMetadata[] memory _metadata = abi.decode(_json.parseRaw(".metadata"), (UMAMetadata[]));
 
-    for (uint i = 0; i < _metadata.length; i++) {
+    for (uint256 i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);
     }
   }
@@ -94,6 +97,7 @@ contract DeployUmaTriggers is ScriptUtils {
     console2.log("    bondAmount", _metadata.bondAmount);
     console2.log("    proposalDisputeWindow", _metadata.proposalDisputeWindow);
     console2.log("    triggerName", _metadata.name);
+    console2.log("    triggerCategory", _metadata.category);
     console2.log("    triggerDescription", _metadata.description);
     console2.log("    triggerLogoURI", _metadata.logoURI);
 
@@ -111,7 +115,6 @@ contract DeployUmaTriggers is ScriptUtils {
     );
 
     if (_availableTrigger == address(0)) {
-
       // There is no available trigger that has your desired configuration. We
       // will have to deploy a new one! First we approve the factory to transfer
       // the reward for us.
@@ -128,15 +131,10 @@ contract DeployUmaTriggers is ScriptUtils {
           _metadata.refundRecipient,
           _metadata.bondAmount,
           _metadata.proposalDisputeWindow,
-          _metadata.name,
-          _metadata.description,
-          _metadata.logoURI
+          TriggerMetadata(_metadata.name, _metadata.category, _metadata.description, _metadata.logoURI)
         )
       );
-      console2.log(
-        "UMATrigger deployed",
-        _availableTrigger
-      );
+      console2.log("UMATrigger deployed", _availableTrigger);
     } else {
       // A trigger exactly like the one you wanted already exists!
       // Since triggers can be re-used, there's no need to deploy a new one.

@@ -21,13 +21,12 @@ contract FixedPriceAggregator is AggregatorV3Interface {
     decimals = _decimals;
   }
 
-
   /// @notice A description indicating this is a fixed price oracle.
   function description() external pure returns (string memory) {
     return "Fixed price oracle";
   }
 
-   /// @notice A version number of 0.
+  /// @notice A version number of 0.
   function version() external pure returns (uint256) {
     return 0;
   }

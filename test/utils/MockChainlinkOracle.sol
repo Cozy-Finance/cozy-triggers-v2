@@ -27,10 +27,15 @@ contract MockChainlinkOracle is AggregatorV3Interface {
   }
 
   // Just to make the compiler happy.
-  function getRoundData(uint80 /*_roundId */) external view returns (uint80, int256, uint256, uint256, uint80) {
+  function getRoundData(uint80 /*_roundId */ ) external view returns (uint80, int256, uint256, uint256, uint80) {
     return this.latestRoundData();
   }
 
-  function TEST_HOOK_setPrice(uint256 _newPrice) public { price = _newPrice; }
-  function TEST_HOOK_setUpdatedAt(uint256 _timestamp) public { updatedAt = _timestamp; }
+  function TEST_HOOK_setPrice(uint256 _newPrice) public {
+    price = _newPrice;
+  }
+
+  function TEST_HOOK_setUpdatedAt(uint256 _timestamp) public {
+    updatedAt = _timestamp;
+  }
 }

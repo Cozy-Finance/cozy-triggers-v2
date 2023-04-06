@@ -21,9 +21,10 @@ interface IChainlinkTriggerFactory {
   /// `ChainlinkTrigger.priceTolerance()` for more information.
   /// @param truthFrequencyTolerance The frequencyTolerance that the deployed trigger will have for the truth oracle. See
   /// `ChainlinkTrigger.truthFrequencyTolerance()` for more information.
-  /// @param trackingFrequencyTolerance The frequencyTolerance that the deployed trigger will have for the tracking oracle. See
-  /// `ChainlinkTrigger.trackingFrequencyTolerance()` for more information.
+  /// @param trackingFrequencyTolerance The frequencyTolerance that the deployed trigger will have for the tracking
+  /// oracle. See `ChainlinkTrigger.trackingFrequencyTolerance()` for more information.
   /// @param name The name that should be used for markets that use the trigger.
+  /// @param category The category of the trigger.
   /// @param description A human-readable description of the trigger.
   /// @param logoURI The URI of a logo image to represent the trigger.
   /// For other attributes, see the docs for the params of `deployTrigger` in
@@ -37,6 +38,7 @@ interface IChainlinkTriggerFactory {
     uint256 truthFrequencyTolerance,
     uint256 trackingFrequencyTolerance,
     string name,
+    string category,
     string description,
     string logoURI
   );

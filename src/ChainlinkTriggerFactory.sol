@@ -56,11 +56,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     if (_truthOracle.decimals() != _trackingOracle.decimals()) revert InvalidOraclePair();
 
     bytes32 _configId = triggerConfigId(
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
+      _truthOracle, _trackingOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance
     );
 
     uint256 _triggerCount = triggerCount[_configId]++;
@@ -69,14 +65,18 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     // trigger contracts deployed with the same parameters.
     bytes32 _salt = _getSalt(_triggerCount);
 
-    _trigger = IChainlinkTrigger(address(new ChainlinkTrigger{salt: _salt}(
-      manager,
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
-    )));
+    _trigger = IChainlinkTrigger(
+      address(
+        new ChainlinkTrigger{salt: _salt}(
+        manager,
+        _truthOracle,
+        _trackingOracle,
+        _priceTolerance,
+        _truthFrequencyTolerance,
+        _trackingFrequencyTolerance
+        )
+      )
+    );
 
     emit TriggerDeployed(
       address(_trigger),
@@ -87,6 +87,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
       _metadata.name,
+      _metadata.category,
       _metadata.description,
       _metadata.logoURI
     );
@@ -148,23 +149,13 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance,
     uint256 _triggerCount
-  ) public view returns(address _address) {
+  ) public view returns (address _address) {
     bytes memory _triggerConstructorArgs = abi.encode(
-      manager,
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
+      manager, _truthOracle, _trackingOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance
     );
 
     // https://eips.ethereum.org/EIPS/eip-1014
-    bytes32 _bytecodeHash = keccak256(
-      bytes.concat(
-        type(ChainlinkTrigger).creationCode,
-        _triggerConstructorArgs
-      )
-    );
+    bytes32 _bytecodeHash = keccak256(bytes.concat(type(ChainlinkTrigger).creationCode, _triggerConstructorArgs));
     // We use _triggerCount as the salt so that the address is the same across chains for
     // trigger contracts deployed with the same parameters.
     bytes32 _salt = _getSalt(_triggerCount);
@@ -191,31 +182,19 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _priceTolerance,
     uint256 _truthFrequencyTolerance,
     uint256 _trackingFrequencyTolerance
-  ) public view returns(address) {
-
+  ) public view returns (address) {
     bytes32 _counterId = triggerConfigId(
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
+      _truthOracle, _trackingOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance
     );
     uint256 _triggerCount = triggerCount[_counterId];
 
     for (uint256 i = 0; i < _triggerCount; i++) {
       address _computedAddr = computeTriggerAddress(
-        _truthOracle,
-        _trackingOracle,
-        _priceTolerance,
-        _truthFrequencyTolerance,
-        _trackingFrequencyTolerance,
-        i
+        _truthOracle, _trackingOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance, i
       );
 
       ChainlinkTrigger _trigger = ChainlinkTrigger(_computedAddr);
-      if (_trigger.getSetsLength() < _trigger.MAX_SET_LENGTH()) {
-        return _computedAddr;
-      }
+      if (_trigger.getSetsLength() < _trigger.MAX_SET_LENGTH()) return _computedAddr;
     }
 
     return address(0); // If none is found, return zero address.
@@ -241,12 +220,7 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint256 _trackingFrequencyTolerance
   ) public view returns (bytes32) {
     bytes memory _triggerConstructorArgs = abi.encode(
-      manager,
-      _truthOracle,
-      _trackingOracle,
-      _priceTolerance,
-      _truthFrequencyTolerance,
-      _trackingFrequencyTolerance
+      manager, _truthOracle, _trackingOracle, _priceTolerance, _truthFrequencyTolerance, _trackingFrequencyTolerance
     );
     return keccak256(_triggerConstructorArgs);
   }
@@ -276,20 +250,9 @@ contract ChainlinkTriggerFactory is IChainlinkTriggerFactory {
     uint8 _decimals
   ) public view returns (address) {
     bytes memory _aggregatorConstructorArgs = abi.encode(_decimals, _price);
-    bytes32 _bytecodeHash = keccak256(
-      bytes.concat(
-        type(FixedPriceAggregator).creationCode,
-        _aggregatorConstructorArgs
-      )
-    );
-    bytes32 _data = keccak256(
-      bytes.concat(
-        bytes1(0xff),
-        bytes20(address(this)),
-        FIXED_PRICE_ORACLE_SALT,
-        _bytecodeHash
-      )
-    );
+    bytes32 _bytecodeHash = keccak256(bytes.concat(type(FixedPriceAggregator).creationCode, _aggregatorConstructorArgs));
+    bytes32 _data =
+      keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), FIXED_PRICE_ORACLE_SALT, _bytecodeHash));
     return address(uint160(uint256(_data)));
   }
 

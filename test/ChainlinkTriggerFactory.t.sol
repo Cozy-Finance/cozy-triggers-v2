@@ -10,26 +10,26 @@ import {TriggerMetadata} from "src/structs/Triggers.sol";
 // TODO Use `vm.mockCall` instead of a dedicated mocking contract.
 contract MockManager {
   // Any set you ask about is managed by this contract \o/.
-  function isSet(ISet /* set */) external pure returns(bool) {
+  function isSet(ISet /* set */ ) external pure returns (bool) {
     return true;
   }
 
   // This is a no-op, it's not needed for these tests.
-  function updateMarketState(ISet /* set */, MarketState /* newMarketState */) external {}
+  function updateMarketState(ISet, /* set */ MarketState /* newMarketState */ ) external {}
 }
 
 contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
   uint256 constant ZOC = 1e4;
 
-  address constant ethUsdOracleMainnet    = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; //   ETH / USD on mainnet
-  address constant stEthUsdOracleMainnet  = 0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8; // stETH / USD on mainnet
-  address constant usdcUsdOracleMainnet   = 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6; //  USDC / USD on mainnet
-  address constant bnbEthOracleMainnet    = 0xc546d2d06144F9DD42815b8bA46Ee7B8FcAFa4a2; //   BNB / ETH on mainnet
+  address constant ethUsdOracleMainnet = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; //   ETH / USD on mainnet
+  address constant stEthUsdOracleMainnet = 0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8; // stETH / USD on mainnet
+  address constant usdcUsdOracleMainnet = 0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6; //  USDC / USD on mainnet
+  address constant bnbEthOracleMainnet = 0xc546d2d06144F9DD42815b8bA46Ee7B8FcAFa4a2; //   BNB / ETH on mainnet
 
-  address constant ethUsdOracleOptimism   = 0x13e3Ee699D1909E989722E753853AE30b17e08c5; //   ETH / USD on Optimism
+  address constant ethUsdOracleOptimism = 0x13e3Ee699D1909E989722E753853AE30b17e08c5; //   ETH / USD on Optimism
   address constant stEthUsdOracleOptimism = 0x41878779a388585509657CE5Fb95a80050502186; // stETH / USD on Optimism
-  address constant usdcUsdOracleOptimism  = 0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3; //  USDC / USD on Optimism
-  address constant linkEthOracleOptimism  = 0x464A1515ADc20de946f8d0DEB99cead8CEAE310d; //  LINK / ETH on Optimism
+  address constant usdcUsdOracleOptimism = 0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3; //  USDC / USD on Optimism
+  address constant linkEthOracleOptimism = 0x464A1515ADc20de946f8d0DEB99cead8CEAE310d; //  LINK / ETH on Optimism
 
   ChainlinkTriggerFactory factory;
 
@@ -42,6 +42,7 @@ contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
     uint256 truthFrequencyTolerance,
     uint256 trackingFrequencyTolerance,
     string name,
+    string category,
     string description,
     string logoURI
   );
@@ -55,7 +56,7 @@ contract ChainlinkTriggerFactoryTestBaseSetup is TriggerTestSetup {
 
   function _addMaxSetsToTrigger(IChainlinkTrigger _trigger) internal {
     uint256 _maxSetCount = _trigger.MAX_SET_LENGTH();
-    for(uint256 i = 0; i < _maxSetCount; i++) {
+    for (uint256 i = 0; i < _maxSetCount; i++) {
       address caller_ = address(uint160(uint256(keccak256(abi.encode(i)))));
       vm.prank(caller_);
       _trigger.addSet(ISet(caller_));
@@ -81,8 +82,8 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
   function setUp() public override {
     super.setUp();
 
-    uint256 mainnetForkBlock = 15181633; // The mainnet block number at the time this test was written.
-    uint256 optimismForkBlock = 25582446; // The optimism block number
+    uint256 mainnetForkBlock = 15_181_633; // The mainnet block number at the time this test was written.
+    uint256 optimismForkBlock = 25_582_446; // The optimism block number
     mainnetForkId = vm.createFork(vm.envString("MAINNET_RPC_URL"), mainnetForkBlock);
     optimismForkId = vm.createFork(vm.envString("OPTIMISM_RPC_URL"), optimismForkBlock);
   }
@@ -94,10 +95,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
   ) internal {
     vm.selectFork(_forkId);
 
-    assertNotEq(
-      AggregatorV3Interface(_truthOracle).decimals(),
-      AggregatorV3Interface(_trackingOracle).decimals()
-    );
+    assertNotEq(AggregatorV3Interface(_truthOracle).decimals(), AggregatorV3Interface(_trackingOracle).decimals());
 
     vm.expectRevert(ChainlinkTriggerFactory.InvalidOraclePair.selector);
 
@@ -109,6 +107,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
       45, // trackingFrequencyTolerance
       TriggerMetadata(
         "Peg Protection Trigger",
+        "Peg",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
       )
@@ -147,6 +146,7 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         _trackingFrequencyTolerance,
         TriggerMetadata(
           "Chainlink Trigger",
+          "Category Name",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
         )
@@ -162,12 +162,13 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
         _trackingFrequencyTolerance,
         TriggerMetadata(
           "Peg Protection Trigger",
+          "Peg",
           "A trigger that protects from something depegging",
           "https://via.placeholder.com/150"
         )
       );
       AggregatorV3Interface _pegOracle = _trigger.truthOracle();
-      (,int256 _priceInt,,,) = _pegOracle.latestRoundData();
+      (, int256 _priceInt,,,) = _pegOracle.latestRoundData();
       assertEq(_priceInt, _pegPrice);
       assertEq(_pegOracle.decimals(), _pegDecimals);
       _truthOracle = address(_pegOracle);
@@ -199,11 +200,9 @@ contract DeployTriggerForkTest is ChainlinkTriggerFactoryTestBaseSetup {
     assertEq(_trigger.runProgrammaticCheck(), MarketState.TRIGGERED);
   }
 
-  function testFork_DeployTriggerChainlinkIntegration(
-    uint256 _forkId,
-    address _truthOracle,
-    address _trackingOracle
-  ) internal {
+  function testFork_DeployTriggerChainlinkIntegration(uint256 _forkId, address _truthOracle, address _trackingOracle)
+    internal
+  {
     testFork_DeployTriggerChainlinkIntegration(_forkId, _truthOracle, _trackingOracle, 0, 0);
   }
 
@@ -237,6 +236,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Threshold",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -283,6 +283,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _truthFrequencyTolerance,
       _trackingFrequencyTolerance,
       "Chainlink Trigger",
+      "Peg",
       "A trigger that compares prices on Chainlink against a threshold",
       "https://via.placeholder.com/150"
     );
@@ -295,6 +296,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -325,6 +327,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -340,6 +343,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -350,9 +354,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
     assertNotEq(address(_triggerA), address(_triggerB));
   }
 
-  function testFuzz_DeployTriggerDeploysToDifferentAddressesOnDifferentChains(
-    uint8 _chainId
-  ) public {
+  function testFuzz_DeployTriggerDeploysToDifferentAddressesOnDifferentChains(uint8 _chainId) public {
     vm.assume(_chainId != block.chainid);
 
     uint256 _priceTolerance = 0.42e4;
@@ -367,6 +369,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -382,6 +385,7 @@ contract DeployTriggerTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -415,6 +419,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -423,9 +428,7 @@ contract ComputeTriggerAddressTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_expectedAddress, address(_trigger));
   }
 
-  function testFuzz_ComputeTriggerAddressComputesSameAddressesOnDifferentChains(
-    uint8 _chainId
-  ) public {
+  function testFuzz_ComputeTriggerAddressComputesSameAddressesOnDifferentChains(uint8 _chainId) public {
     vm.assume(_chainId != block.chainid);
 
     address _addressA = factory.computeTriggerAddress(
@@ -500,6 +503,7 @@ contract TriggerConfigIdTest is ChainlinkTriggerFactoryTestSetup {
       _trackingFrequencyTolerance,
       TriggerMetadata(
         "Chainlink Trigger",
+        "Peg",
         "A trigger that compares prices on Chainlink against a threshold",
         "https://via.placeholder.com/150"
       )
@@ -539,6 +543,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         _trackingFrequencyTolerance,
         TriggerMetadata(
           "Chainlink Trigger",
+          "Peg",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
         )
@@ -578,6 +583,7 @@ contract FindAvailableTriggerTest is ChainlinkTriggerFactoryTestSetup {
         _trackingFrequencyTolerance,
         TriggerMetadata(
           "Chainlink Trigger",
+          "Peg",
           "A trigger that compares prices on Chainlink against a threshold",
           "https://via.placeholder.com/150"
         )
@@ -607,6 +613,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       60, // 60s frequency tolerance.
       TriggerMetadata(
         "Peg Protection Trigger",
+        "Peg",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
       )
@@ -621,7 +628,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_trigger.truthFrequencyTolerance(), 0);
     assertEq(_trigger.trackingFrequencyTolerance(), 60);
 
-    (,int256 _priceInt,, uint256 _updatedAt,) = _trigger.truthOracle().latestRoundData();
+    (, int256 _priceInt,, uint256 _updatedAt,) = _trigger.truthOracle().latestRoundData();
     assertEq(_priceInt, 1e8);
     assertEq(_updatedAt, block.timestamp);
   }
@@ -635,6 +642,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       60, // 60s frequency tolerance.
       TriggerMetadata(
         "Peg Protection Trigger",
+        "Peg",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
       )
@@ -648,6 +656,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       360, // 360s frequency tolerance.
       TriggerMetadata(
         "Peg Protection Trigger",
+        "Peg",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
       )
@@ -664,6 +673,7 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
       360, // 360s frequency tolerance.
       TriggerMetadata(
         "Peg Protection Trigger",
+        "Peg",
         "A trigger that protects from something depegging",
         "https://via.placeholder.com/150"
       )
@@ -675,18 +685,14 @@ contract DeployPeggedTriggerTest is ChainlinkTriggerFactoryTestSetup {
 }
 
 contract DeployFixedPriceAggregatorTest is ChainlinkTriggerFactoryTestSetup {
-  function testFuzz_DeployFixedPriceAggregatorIsIdempotent(
-    int256 _price,
-    uint8 _decimals,
-    uint8 _chainId
-  ) public {
+  function testFuzz_DeployFixedPriceAggregatorIsIdempotent(int256 _price, uint8 _decimals, uint8 _chainId) public {
     AggregatorV3Interface _oracleA = factory.deployFixedPriceAggregator(_price, _decimals);
     AggregatorV3Interface _oracleB = factory.deployFixedPriceAggregator(_price, _decimals);
 
     assertEq(_oracleA, _oracleB);
     assertEq(_oracleA.decimals(), _decimals);
 
-    (,int256 _priceInt,, uint256 _updatedAt,) = _oracleA.latestRoundData();
+    (, int256 _priceInt,, uint256 _updatedAt,) = _oracleA.latestRoundData();
     assertEq(_price, _priceInt);
     assertEq(_updatedAt, block.timestamp);
 
@@ -696,10 +702,7 @@ contract DeployFixedPriceAggregatorTest is ChainlinkTriggerFactoryTestSetup {
     assertEq(_oracleA, _oracleC);
   }
 
-  function testFuzz_DeployFixedPriceAggregatorDeploysToComputedAddress(
-    int256 _price,
-    uint8 _decimals
-  ) public {
+  function testFuzz_DeployFixedPriceAggregatorDeploysToComputedAddress(int256 _price, uint8 _decimals) public {
     AggregatorV3Interface _oracle = factory.deployFixedPriceAggregator(_price, _decimals);
     address _expectedAddress = factory.computeFixedPriceAggregatorAddress(_price, _decimals);
     assertEq(_expectedAddress, address(_oracle));

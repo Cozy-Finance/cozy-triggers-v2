@@ -41,24 +41,26 @@ abstract contract BaseTrigger is IBaseTrigger {
     manager = _manager;
   }
 
-  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
-  /// @dev This must be implemented by contracts that inherit this contract. For manual triggers, after the trigger is deployed
-  /// this should initially return false, and instead return true once the entity responsible for transitioning trigger state
-  /// acknowledges the trigger. For programmatic triggers, this should always return true.
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger
+  /// state.
+  /// @dev This must be implemented by contracts that inherit this contract. For manual triggers, after the trigger is
+  /// deployed this should initially return false, and instead return true once the entity responsible for
+  /// transitioning trigger state acknowledges the trigger. For programmatic triggers, this should always return true.
   function acknowledged() public virtual returns (bool);
 
   /// @notice The Sets that use this trigger in a market.
   /// @dev Use this function to retrieve all Sets.
-  function getSets() public view returns(ISet[] memory) {
+  function getSets() public view returns (ISet[] memory) {
     return sets;
   }
 
   /// @notice The number of Sets that use this trigger in a market.
-  function getSetsLength() public view returns(uint256) {
+  function getSetsLength() public view returns (uint256) {
     return sets.length;
   }
 
-  /// @dev Call this method to update Set addresses after deploy. Returns false if the trigger has not been acknowledged.
+  /// @dev Call this method to update Set addresses after deploy. Returns false if the trigger has not been
+  /// acknowledged.
   function addSet(ISet _set) external returns (bool) {
     if (msg.sender != address(_set)) revert Unauthorized();
     if (!acknowledged()) revert Unacknowledged();
@@ -88,16 +90,18 @@ abstract contract BaseTrigger is IBaseTrigger {
   }
 
   /// @dev Reimplement this function if different state transitions are needed.
-  function _isValidTriggerStateTransition(MarketState _oldState, MarketState _newState) internal virtual returns(bool) {
+  function _isValidTriggerStateTransition(MarketState _oldState, MarketState _newState) internal virtual returns (bool) {
     // | From / To | ACTIVE      | FROZEN      | PAUSED   | TRIGGERED |
     // | --------- | ----------- | ----------- | -------- | --------- |
     // | ACTIVE    | -           | true        | false    | true      |
     // | FROZEN    | true        | -           | false    | true      |
-    // | PAUSED    | false       | false       | -        | false     | <-- PAUSED is a set-level state, triggers cannot be paused
+    // | PAUSED    | false       | false       | -        | false     | <-- PAUSED is a set-level state, triggers cannot
+    // be paused
     // | TRIGGERED | false       | false       | false    | -         | <-- TRIGGERED is a terminal state
 
     if (_oldState == MarketState.TRIGGERED) return false;
-    if (_oldState == _newState) return true; // If oldState == newState, return true since the Manager will convert that into a no-op.
+    // If oldState == newState, return true since the Set will convert that into a no-op.
+    if (_oldState == _newState) return true;
     if (_oldState == MarketState.ACTIVE && _newState == MarketState.FROZEN) return true;
     if (_oldState == MarketState.FROZEN && _newState == MarketState.ACTIVE) return true;
     if (_oldState == MarketState.ACTIVE && _newState == MarketState.TRIGGERED) return true;
@@ -108,6 +112,8 @@ abstract contract BaseTrigger is IBaseTrigger {
   /// @dev Unchecked increment of the provided value. Realistically it's impossible to overflow a
   /// uint256 so this is always safe.
   function uncheckedIncrement(uint256 i) internal pure returns (uint256) {
-    unchecked { return i + 1; }
+    unchecked {
+      return i + 1;
+    }
   }
 }

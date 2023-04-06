@@ -15,10 +15,7 @@ contract MinimalTrigger is BaseTrigger {
     _updateTriggerState(_newState);
   }
 
-  function TEST_HOOK_isValidTriggerStateTransition(
-    MarketState _oldState,
-    MarketState _newState
-  ) public returns(bool) {
+  function TEST_HOOK_isValidTriggerStateTransition(MarketState _oldState, MarketState _newState) public returns (bool) {
     return _isValidTriggerStateTransition(_oldState, _newState);
   }
 

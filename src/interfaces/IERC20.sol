@@ -18,16 +18,10 @@ interface IERC20 {
   function balanceOf(address account) external view returns (uint256);
   /// @notice Returns the decimal places of the token.
   function decimals() external view returns (uint8);
-  /// @notice Sets `_value` as the allowance of `_spender` over `_owner`s tokens, given a signed approval from the owner.
-  function permit(
-    address owner,
-    address spender,
-    uint256 value,
-    uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s
-  ) external;
+  /// @notice Sets `_value` as the allowance of `_spender` over `_owner`s tokens, given a signed approval from the
+  /// owner.
+  function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+    external;
   /// @notice Returns the name of the token.
   function name() external view returns (string memory);
   /// @notice Returns the symbol of the token.
@@ -36,6 +30,7 @@ interface IERC20 {
   function totalSupply() external view returns (uint256);
   /// @notice Moves `_amount` tokens from the caller's account to `_to`.
   function transfer(address to, uint256 amount) external returns (bool);
-  /// @notice Moves `_amount` tokens from `_from` to `_to` using the allowance mechanism. `_amount` is then deducted from the caller's allowance.
+  /// @notice Moves `_amount` tokens from `_from` to `_to` using the allowance mechanism. `_amount` is then deducted
+  /// from the caller's allowance.
   function transferFrom(address from, address to, uint256 amount) external returns (bool);
 }
