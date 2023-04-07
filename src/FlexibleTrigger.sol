@@ -116,7 +116,9 @@ contract FlexibleTrigger is BaseTrigger {
     for (uint256 i = 0; i < _lenFreezers;) {
       freezers[_freezers[i]] = true;
       emit FreezerAdded(_freezers[i]);
-      unchecked { i++; }
+      unchecked {
+        i++;
+      }
     }
   }
 
@@ -125,7 +127,8 @@ contract FlexibleTrigger is BaseTrigger {
     isAcknowledged = true;
   }
 
-  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger
+  /// state.
   /// @dev This trigger has a boss role that can freeze and unfreeze the trigger, so it requires acknowledgement.
   function acknowledged() public view override returns (bool) {
     return isAcknowledged;

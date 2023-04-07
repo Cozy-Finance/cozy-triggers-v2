@@ -63,7 +63,8 @@ interface IChainlinkTrigger {
   /// required state changes both in the trigger and the sets.
   function runProgrammaticCheck() external returns (MarketState);
 
-  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger
+  /// state.
   /// @notice Chainlink triggers are programmatic, so this always returns true.
   function acknowledged() external pure returns (bool);
 }

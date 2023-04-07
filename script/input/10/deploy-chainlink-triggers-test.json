@@ -8,6 +8,7 @@
       "truthFrequencyTolerance": 1200,
       "trackingFrequencyTolerance": 86400,
       "name": "stETH Depeg Protection",
+      "category": "Peg",
       "description": "Protects against the de-pegging of stETH to ETH on Lido.",
       "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/8085.png"
     }

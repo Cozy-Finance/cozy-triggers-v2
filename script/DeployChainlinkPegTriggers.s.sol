@@ -5,34 +5,35 @@ import "script/ScriptUtils.sol";
 import "src/ChainlinkTriggerFactory.sol";
 
 /**
-  * @notice Purpose: Local deploy, testing, and production.
-  *
-  * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
-  * Before executing, the input json file `script/input/<chain-id>/deploy-chainlink-peg-triggers-<test or production>.json`
-  * should be reviewed.
-  *
-  * To run this script:
-  *
-  * ```sh
-  * # Start anvil, forking from the current state of the desired chain.
-  * anvil --fork-url $OPTIMISM_RPC_URL
-  *
-  * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployChainlinkPegTriggers.s.sol \
-  *   --sig "run(string)" "deploy-chainlink-peg-triggers-<test or production>" \
-  *   --rpc-url "http://127.0.0.1:8545" \
-  *   -vvvv
-  *
-  * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployChainlinkPegTriggers.s.sol \
-  *   --sig "run(string)" "deploy-chainlink-peg-triggers-<test or production>" \
-  *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
-  *   --etherscan-api-key $ETHERSCAN_KEY \
-  *   --verify \
-  *   --broadcast \
-  *   -vvvv
-  * ```
+ * @notice Purpose: Local deploy, testing, and production.
+ *
+ * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
+ * Before executing, the input json file `script/input/<chain-id>/deploy-chainlink-peg-triggers-<test or
+ * production>.json`
+ * should be reviewed.
+ *
+ * To run this script:
+ *
+ * ```sh
+ * # Start anvil, forking from the current state of the desired chain.
+ * anvil --fork-url $OPTIMISM_RPC_URL
+ *
+ * # In a separate terminal, perform a dry run the script.
+ * forge script script/DeployChainlinkPegTriggers.s.sol \
+ *   --sig "run(string)" "deploy-chainlink-peg-triggers-<test or production>" \
+ *   --rpc-url "http://127.0.0.1:8545" \
+ *   -vvvv
+ *
+ * # Or, to broadcast transactions with etherscan verification.
+ * forge script script/DeployChainlinkPegTriggers.s.sol \
+ *   --sig "run(string)" "deploy-chainlink-peg-triggers-<test or production>" \
+ *   --rpc-url "http://127.0.0.1:8545" \
+ *   --private-key $OWNER_PRIVATE_KEY \
+ *   --etherscan-api-key $ETHERSCAN_KEY \
+ *   --verify \
+ *   --broadcast \
+ *   -vvvv
+ * ```
  */
 contract DeployChainlinkPegTriggers is ScriptUtils {
   using stdJson for string;
@@ -43,6 +44,8 @@ contract DeployChainlinkPegTriggers is ScriptUtils {
 
   // Note: The attributes in this struct must be in alphabetical order due to `parseJson` limitations.
   struct ChainlinkMetadata {
+    // The category of the trigger.
+    string category;
     // The amount of decimals used by the peg price and tracking oracle price.
     uint8 decimals;
     // A human-readable description of the intent of the trigger.
@@ -76,7 +79,7 @@ contract DeployChainlinkPegTriggers is ScriptUtils {
 
     ChainlinkMetadata[] memory _metadata = abi.decode(_json.parseRaw(".metadata"), (ChainlinkMetadata[]));
 
-    for (uint i = 0; i < _metadata.length; i++) {
+    for (uint256 i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);
     }
   }
@@ -90,15 +93,15 @@ contract DeployChainlinkPegTriggers is ScriptUtils {
     console2.log("    priceTolerance", _metadata.priceTolerance);
     console2.log("    frequencyTolerance", _metadata.frequencyTolerance);
     console2.log("    triggerName", _metadata.name);
+    console2.log("    triggerCategory", _metadata.category);
     console2.log("    triggerDescription", _metadata.description);
     console2.log("    triggerLogoURI", _metadata.logoURI);
 
     // Loosely validate oracle interface by ensuring `description()` doesn't revert.
     _metadata.trackingOracle.description();
 
-    AggregatorV3Interface _truthOracleAddress = AggregatorV3Interface(
-      factory.computeFixedPriceAggregatorAddress(_metadata.pegPrice, _metadata.decimals)
-    );
+    AggregatorV3Interface _truthOracleAddress =
+      AggregatorV3Interface(factory.computeFixedPriceAggregatorAddress(_metadata.pegPrice, _metadata.decimals));
 
     // Check to see if a trigger has already been deployed with the desired configs.
     address _availableTrigger = factory.findAvailableTrigger(
@@ -123,17 +126,10 @@ contract DeployChainlinkPegTriggers is ScriptUtils {
           _metadata.trackingOracle,
           _metadata.priceTolerance,
           _metadata.frequencyTolerance,
-          TriggerMetadata(
-            _metadata.name,
-            _metadata.description,
-            _metadata.logoURI
-          )
+          TriggerMetadata(_metadata.name, _metadata.category, _metadata.description, _metadata.logoURI)
         )
       );
-      console2.log(
-        "ChainlinkTrigger deployed",
-        _availableTrigger
-      );
+      console2.log("ChainlinkTrigger deployed", _availableTrigger);
     } else {
       // A trigger exactly like the one you wanted already exists!
       // Since triggers can be re-used, there's no need to deploy a new one.

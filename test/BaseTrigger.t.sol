@@ -45,18 +45,10 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     ISet _imposterSet = ISet(makeAddr("random set"));
 
     // The set lists the Cozy protocol manager as its manager.
-    vm.mockCall(
-      address(_imposterSet),
-      abi.encodeWithSignature("manager()"),
-      abi.encode(address(manager))
-    );
+    vm.mockCall(address(_imposterSet), abi.encodeWithSignature("manager()"), abi.encode(address(manager)));
 
     // But it shouldn't matter since the manager doesn't know about that set.
-    vm.mockCall(
-      address(manager),
-      abi.encodeWithSelector(IManager.isSet.selector, _imposterSet),
-      abi.encode(false)
-    );
+    vm.mockCall(address(manager), abi.encodeWithSelector(IManager.isSet.selector, _imposterSet), abi.encode(false));
 
     vm.prank(address(_imposterSet));
     vm.expectRevert(BaseTrigger.Unauthorized.selector);
@@ -72,7 +64,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     trigger.addSet(_lastSetAdded);
     assertEq(_setCount, trigger.getSets().length);
 
-     // You can add a new set, however.
+    // You can add a new set, however.
     vm.expectEmit(true, true, true, true);
     emit SetAdded(set2);
     vm.prank(address(set2));
@@ -81,7 +73,7 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     assertEq(_setCount, trigger.getSets().length);
     assertEq(address(trigger.sets(_setCount - 1)), address(set2));
 
-     // You still cannot add a duplicate set at this point.
+    // You still cannot add a duplicate set at this point.
     vm.prank(address(set2));
     trigger.addSet(set2);
     assertEq(_setCount, trigger.getSets().length);
@@ -92,7 +84,8 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
     uint256 _setCount = trigger.getSets().length;
     uint256 _maxSetCount = trigger.MAX_SET_LENGTH();
 
-    for(uint256 i; i < _maxSetCount - 1 ; i++) { // Minus 1 because there is already one ISet.
+    for (uint256 i; i < _maxSetCount - 1; i++) {
+      // Minus 1 because there is already one ISet.
       address _newSet = makeAddr(string.concat("set", vm.toString(i))); // e.g. "set1" is the label.
 
       vm.prank(address(_newSet));
@@ -103,18 +96,19 @@ contract BaseTriggerCoreTest is TriggerTestSetup {
       assertEq(address(trigger.sets(_setCount - 1)), _newSet);
     }
 
-     // If we try to add another set, it should revert.
-     assertEq(trigger.MAX_SET_LENGTH(), trigger.getSets().length);
-     vm.expectRevert(BaseTrigger.SetLimitReached.selector);
-     vm.prank(makeAddr("reverting set"));
-     trigger.addSet(ISet(makeAddr("reverting set")));
+    // If we try to add another set, it should revert.
+    assertEq(trigger.MAX_SET_LENGTH(), trigger.getSets().length);
+    vm.expectRevert(BaseTrigger.SetLimitReached.selector);
+    vm.prank(makeAddr("reverting set"));
+    trigger.addSet(ISet(makeAddr("reverting set")));
   }
 
   // | From / To | ACTIVE      | FROZEN      | PAUSED   | TRIGGERED |
   // | --------- | ----------- | ----------- | -------- | --------- |
   // | ACTIVE    | -           | true        | false    | false     |
   // | FROZEN    | true        | -           | false    | true      |
-  // | PAUSED    | false       | false       | -        | false     | <-- PAUSED is a set-level state, triggers cannot be paused
+  // | PAUSED    | false       | false       | -        | false     | <-- PAUSED is a set-level state, triggers cannot
+  // be paused
   // | TRIGGERED | false       | false       | false    | -         | <-- TRIGGERED is a terminal state
   // Transitions where from == to are allowed since the IManager converts them into a no-op.
 
@@ -137,17 +131,41 @@ abstract contract UpdateTriggerStateTest is TriggerTestSetup {
   MinimalTrigger trigger;
   ISet[] sets;
 
-  function test_UpdateTriggerStateTest1()  public { updateTriggerStateTest(MarketState.ACTIVE, MarketState.ACTIVE, false); }
-  function test_UpdateTriggerStateTest2()  public { updateTriggerStateTest(MarketState.ACTIVE, MarketState.FROZEN, false); }
-  function test_UpdateTriggerStateTest4()  public { updateTriggerStateTest(MarketState.ACTIVE, MarketState.TRIGGERED, false); }
+  function test_UpdateTriggerStateTest1() public {
+    updateTriggerStateTest(MarketState.ACTIVE, MarketState.ACTIVE, false);
+  }
 
-  function test_UpdateTriggerStateTest5()  public { updateTriggerStateTest(MarketState.FROZEN, MarketState.ACTIVE, false); }
-  function test_UpdateTriggerStateTest6()  public { updateTriggerStateTest(MarketState.FROZEN, MarketState.FROZEN, false); }
-  function test_UpdateTriggerStateTest8()  public { updateTriggerStateTest(MarketState.FROZEN, MarketState.TRIGGERED, false); }
+  function test_UpdateTriggerStateTest2() public {
+    updateTriggerStateTest(MarketState.ACTIVE, MarketState.FROZEN, false);
+  }
 
-  function test_UpdateTriggerStateTest13() public { updateTriggerStateTest(MarketState.TRIGGERED, MarketState.ACTIVE, true); }
-  function test_UpdateTriggerStateTest14() public { updateTriggerStateTest(MarketState.TRIGGERED, MarketState.FROZEN, true); }
-  function test_UpdateTriggerStateTest16() public { updateTriggerStateTest(MarketState.TRIGGERED, MarketState.TRIGGERED, true); }
+  function test_UpdateTriggerStateTest4() public {
+    updateTriggerStateTest(MarketState.ACTIVE, MarketState.TRIGGERED, false);
+  }
+
+  function test_UpdateTriggerStateTest5() public {
+    updateTriggerStateTest(MarketState.FROZEN, MarketState.ACTIVE, false);
+  }
+
+  function test_UpdateTriggerStateTest6() public {
+    updateTriggerStateTest(MarketState.FROZEN, MarketState.FROZEN, false);
+  }
+
+  function test_UpdateTriggerStateTest8() public {
+    updateTriggerStateTest(MarketState.FROZEN, MarketState.TRIGGERED, false);
+  }
+
+  function test_UpdateTriggerStateTest13() public {
+    updateTriggerStateTest(MarketState.TRIGGERED, MarketState.ACTIVE, true);
+  }
+
+  function test_UpdateTriggerStateTest14() public {
+    updateTriggerStateTest(MarketState.TRIGGERED, MarketState.FROZEN, true);
+  }
+
+  function test_UpdateTriggerStateTest16() public {
+    updateTriggerStateTest(MarketState.TRIGGERED, MarketState.TRIGGERED, true);
+  }
 
   function updateTriggerStateTest(MarketState _fromState, MarketState _toState, bool _expectNoChange) internal {
     updateTriggerState(trigger, _fromState);

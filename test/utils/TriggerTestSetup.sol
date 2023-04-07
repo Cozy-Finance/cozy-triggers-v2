@@ -58,7 +58,6 @@ contract TriggerTestSetup is Test {
   // -------- Cheatcode Helpers --------
   // -----------------------------------
 
-
   // Helper methods.
   function updateTriggerState(ITrigger _trigger, MarketState _val) public {
     stdstore.target(address(_trigger)).sig("state()").checked_write(uint256(_val));

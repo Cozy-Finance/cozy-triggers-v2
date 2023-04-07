@@ -64,8 +64,10 @@ contract ChainlinkTrigger is BaseTrigger {
   /// @param _truthOracle The canonical oracle, assumed to be correct.
   /// @param _trackingOracle The oracle we expect to diverge.
   /// @param _priceTolerance The maximum percent delta between oracle prices that is allowed, as a zoc.
-  /// @param _truthFrequencyTolerance The maximum amount of time we allow to elapse before the truth oracle's price is deemed stale.
-  /// @param _trackingFrequencyTolerance The maximum amount of time we allow to elapse before the tracking oracle's price is deemed stale.
+  /// @param _truthFrequencyTolerance The maximum amount of time we allow to elapse before the truth oracle's price is
+  /// deemed stale.
+  /// @param _trackingFrequencyTolerance The maximum amount of time we allow to elapse before the tracking oracle's
+  /// price is deemed stale.
   constructor(
     IManager _manager,
     AggregatorV3Interface _truthOracle,
@@ -111,7 +113,8 @@ contract ChainlinkTrigger is BaseTrigger {
     return state;
   }
 
-  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger state.
+  /// @notice Returns true if the trigger has been acknowledged by the entity responsible for transitioning trigger
+  /// state.
   /// @notice Chainlink triggers are programmatic, so this always returns true.
   function acknowledged() public pure override returns (bool) {
     return true;
@@ -123,11 +126,8 @@ contract ChainlinkTrigger is BaseTrigger {
     uint256 _trackingPrice = _oraclePrice(trackingOracle, trackingFrequencyTolerance);
 
     // If one of the oracles has fewer decimals than the other, we scale up the lower decimal price.
-    if (oracleToScale == OracleToScale.TRUTH) {
-      _truePrice = _truePrice * scaleFactor;
-    } else if (oracleToScale == OracleToScale.TRACKING) {
-      _trackingPrice = _trackingPrice * scaleFactor;
-    }
+    if (oracleToScale == OracleToScale.TRUTH) _truePrice = _truePrice * scaleFactor;
+    else if (oracleToScale == OracleToScale.TRACKING) _trackingPrice = _trackingPrice * scaleFactor;
 
     uint256 _priceDelta = _truePrice > _trackingPrice ? _truePrice - _trackingPrice : _trackingPrice - _truePrice;
 
@@ -139,8 +139,12 @@ contract ChainlinkTrigger is BaseTrigger {
   }
 
   /// @dev Returns the current price of the specified `_oracle`.
-  function _oraclePrice(AggregatorV3Interface _oracle, uint256 _frequencyTolerance) internal view returns (uint256 _price) {
-    (,int256 _priceInt,, uint256 _updatedAt,) = _oracle.latestRoundData();
+  function _oraclePrice(AggregatorV3Interface _oracle, uint256 _frequencyTolerance)
+    internal
+    view
+    returns (uint256 _price)
+  {
+    (, int256 _priceInt,, uint256 _updatedAt,) = _oracle.latestRoundData();
     if (_updatedAt > block.timestamp) revert InvalidTimestamp();
     if (block.timestamp - _updatedAt > _frequencyTolerance) revert StaleOraclePrice();
     if (_priceInt < 0) revert InvalidPrice();

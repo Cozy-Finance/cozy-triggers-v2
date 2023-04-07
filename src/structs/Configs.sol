@@ -9,6 +9,9 @@ import {ITrigger} from "src/interfaces/ITrigger.sol";
 struct SetConfig {
   uint32 leverageFactor; // The set's leverage factor.
   uint16 depositFee; // Fee applied on each deposit and mint.
+  // If true, the weight of a market when triggered is automatically distributed pro rata among non-triggered markets.
+  // If false, the set admin must manually rebalance weights through a configuration update.
+  bool rebalanceWeightsOnTrigger;
 }
 
 /// @notice Market-level configuration.
@@ -29,7 +32,8 @@ struct ConfigUpdateMetadata {
   // This strategy is used instead of storing non-hashed `SetConfig` and `MarketConfig[]` for gas optimization
   // and to avoid dynamic array manipulation. This hash is set to bytes32(0) when there is no config update queued.
   bytes32 queuedConfigUpdateHash;
-  // Earliest timestamp at which ISet.finalizeUpdateConfigs can be called to apply config updates queued by updateConfigs.
+  // Earliest timestamp at which ISet.finalizeUpdateConfigs can be called to apply config updates queued by
+  // updateConfigs.
   uint64 configUpdateTime;
   // The latest timestamp after configUpdateTime at which ISet.finalizeUpdateConfigs can be called to apply config
   // updates queued by ISet.updateConfigs. After this timestamp, the queued config updates expire and can no longer be

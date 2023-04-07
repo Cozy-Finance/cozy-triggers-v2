@@ -8,6 +8,7 @@
       "priceTolerance": 5000,
       "frequencyTolerance": 86400,
       "name": "USDT Peg Protection",
+      "category": "Peg",
       "description": "Protects against the de-pegging of USDT to USD.",
       "logoURI": "https://cryptologos.cc/logos/tether-usdt-logo.png?v=023"
     }

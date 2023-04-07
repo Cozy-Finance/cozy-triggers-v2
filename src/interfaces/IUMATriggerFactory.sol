@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import {FinderInterface} from "uma-protocol/packages/core/contracts/oracle/interfaces/FinderInterface.sol";
 import {IERC20} from "src/interfaces/IERC20.sol";
 import {IUMATrigger} from "src/interfaces/IUMATrigger.sol";
+import {TriggerMetadata} from "src/structs/Triggers.sol";
 
 /**
  * @notice This is a utility contract to make it easy to deploy UMATriggers for
@@ -18,6 +19,7 @@ interface IUMATriggerFactory {
   /// @param trigger The address at which the trigger was deployed.
   /// @param triggerConfigId See the function of the same name in this contract.
   /// @param name The name that should be used for markets that use the trigger.
+  /// @param category The category of the trigger.
   /// @param description A human-readable description of the trigger.
   /// @param logoURI The URI of a logo image to represent the trigger.
   /// For other attributes, see the docs for the params of `deployTrigger` in
@@ -33,6 +35,7 @@ interface IUMATriggerFactory {
     uint256 bondAmount,
     uint256 proposalDisputeWindow,
     string name,
+    string category,
     string description,
     string logoURI
   );
@@ -65,9 +68,7 @@ interface IUMATriggerFactory {
   /// more information. It's recommended that the dispute window be fairly long
   /// (12-24 hours), given the difficulty of assessing expected queries (e.g.
   /// "Was protocol ABCD hacked") and the amount of funds potentially at stake.
-  /// @param _name The name that should be used for markets that use the trigger.
-  /// @param _description A human-readable description of the trigger.
-  /// @param _logoURI The URI of a logo image to represent the trigger.
+  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     string memory _query,
     IERC20 _rewardToken,
@@ -75,9 +76,7 @@ interface IUMATriggerFactory {
     address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
-    string memory _name,
-    string memory _description,
-    string memory _logoURI
+    TriggerMetadata memory _metadata
   ) external returns (IUMATrigger _trigger);
 
   /// @notice Call this function to determine the address at which a trigger

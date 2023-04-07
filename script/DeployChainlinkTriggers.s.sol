@@ -5,34 +5,34 @@ import "script/ScriptUtils.sol";
 import "src/ChainlinkTriggerFactory.sol";
 
 /**
-  * @notice Purpose: Local deploy, testing, and production.
-  *
-  * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
-  * Before executing, the input json file `script/input/<chain-id>/deploy-chainlink-triggers-<test or production>.json`
-  * should be reviewed.
-  *
-  * To run this script:
-  *
-  * ```sh
-  * # Start anvil, forking from the current state of the desired chain.
-  * anvil --fork-url $OPTIMISM_RPC_URL
-  *
-  * # In a separate terminal, perform a dry run the script.
-  * forge script script/DeployChainlinkTriggers.s.sol \
-  *   --sig "run(string)" "deploy-chainlink-triggers-<test or production>" \
-  *   --rpc-url "http://127.0.0.1:8545" \
-  *   -vvvv
-  *
-  * # Or, to broadcast transactions with etherscan verification.
-  * forge script script/DeployChainlinkTriggers.s.sol \
-  *   --sig "run(string)" "deploy-chainlink-triggers-<test or production>" \
-  *   --rpc-url "http://127.0.0.1:8545" \
-  *   --private-key $OWNER_PRIVATE_KEY \
-  *   --etherscan-api-key $ETHERSCAN_KEY \
-  *   --verify \
-  *   --broadcast \
-  *   -vvvv
-  * ```
+ * @notice Purpose: Local deploy, testing, and production.
+ *
+ * This script deploys Chainlink triggers for testing using a ChainlinkTriggerFactory.
+ * Before executing, the input json file `script/input/<chain-id>/deploy-chainlink-triggers-<test or production>.json`
+ * should be reviewed.
+ *
+ * To run this script:
+ *
+ * ```sh
+ * # Start anvil, forking from the current state of the desired chain.
+ * anvil --fork-url $OPTIMISM_RPC_URL
+ *
+ * # In a separate terminal, perform a dry run the script.
+ * forge script script/DeployChainlinkTriggers.s.sol \
+ *   --sig "run(string)" "deploy-chainlink-triggers-<test or production>" \
+ *   --rpc-url "http://127.0.0.1:8545" \
+ *   -vvvv
+ *
+ * # Or, to broadcast transactions with etherscan verification.
+ * forge script script/DeployChainlinkTriggers.s.sol \
+ *   --sig "run(string)" "deploy-chainlink-triggers-<test or production>" \
+ *   --rpc-url "http://127.0.0.1:8545" \
+ *   --private-key $OWNER_PRIVATE_KEY \
+ *   --etherscan-api-key $ETHERSCAN_KEY \
+ *   --verify \
+ *   --broadcast \
+ *   -vvvv
+ * ```
  */
 contract DeployChainlinkTriggers is ScriptUtils {
   using stdJson for string;
@@ -43,6 +43,8 @@ contract DeployChainlinkTriggers is ScriptUtils {
 
   // Note: The attributes in this struct must be in alphabetical order due to `parseJson` limitations.
   struct ChainlinkMetadata {
+    // The category of the trigger.
+    string category;
     // A human-readable description of the intent of the trigger.
     string description;
     // Logo uri that describes the trigger, as it should appear within the Cozy user interface.
@@ -76,7 +78,7 @@ contract DeployChainlinkTriggers is ScriptUtils {
 
     ChainlinkMetadata[] memory _metadata = abi.decode(_json.parseRaw(".metadata"), (ChainlinkMetadata[]));
 
-    for (uint i = 0; i < _metadata.length; i++) {
+    for (uint256 i = 0; i < _metadata.length; i++) {
       _deployTrigger(_metadata[i]);
     }
   }
@@ -90,6 +92,7 @@ contract DeployChainlinkTriggers is ScriptUtils {
     console2.log("    truthFrequencyTolerance", _metadata.truthFrequencyTolerance);
     console2.log("    trackingFrequencyTolerance", _metadata.trackingFrequencyTolerance);
     console2.log("    triggerName", _metadata.name);
+    console2.log("    triggerCategory", _metadata.category);
     console2.log("    triggerDescription", _metadata.description);
     console2.log("    triggerLogoURI", _metadata.logoURI);
 
@@ -117,17 +120,10 @@ contract DeployChainlinkTriggers is ScriptUtils {
           _metadata.priceTolerance,
           _metadata.truthFrequencyTolerance,
           _metadata.trackingFrequencyTolerance,
-          TriggerMetadata(
-            _metadata.name,
-            _metadata.description,
-            _metadata.logoURI
-          )
+          TriggerMetadata(_metadata.name, _metadata.category, _metadata.description, _metadata.logoURI)
         )
       );
-      console2.log(
-        "ChainlinkTrigger deployed",
-        _availableTrigger
-      );
+      console2.log("ChainlinkTrigger deployed", _availableTrigger);
     } else {
       // A trigger exactly like the one you wanted already exists!
       // Since triggers can be re-used, there's no need to deploy a new one.

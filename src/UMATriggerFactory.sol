@@ -3,6 +3,7 @@ pragma solidity 0.8.16;
 
 import "src/lib/SafeTransferLib.sol";
 import "src/UMATrigger.sol";
+import "src/interfaces/IUMATriggerFactory.sol";
 
 /**
  * @notice This is a utility contract to make it easy to deploy UMATriggers for
@@ -43,6 +44,7 @@ contract UMATriggerFactory {
     uint256 bondAmount,
     uint256 proposalDisputeWindow,
     string name,
+    string category,
     string description,
     string logoURI
   );
@@ -83,9 +85,7 @@ contract UMATriggerFactory {
   /// more information. It's recommended that the dispute window be fairly long
   /// (12-24 hours), given the difficulty of assessing expected queries (e.g.
   /// "Was protocol ABCD hacked") and the amount of funds potentially at stake.
-  /// @param _name The name that should be used for markets that use the trigger.
-  /// @param _description A human-readable description of the trigger.
-  /// @param _logoURI The URI of a logo image to represent the trigger.
+  /// @param _metadata See TriggerMetadata for more info.
   function deployTrigger(
     string memory _query,
     CozyIERC20 _rewardToken,
@@ -93,41 +93,23 @@ contract UMATriggerFactory {
     address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
-    string memory _name,
-    string memory _description,
-    string memory _logoURI
-  ) external returns(UMATrigger) {
+    TriggerMetadata memory _metadata
+  ) external returns (UMATrigger) {
     // We need to do this because of stack-too-deep errors; there are too many
     // inputs/internal-vars to this function otherwise.
     DeployTriggerVars memory _vars;
 
-    _vars.configId = triggerConfigId(
-      _query,
-      _rewardToken,
-      _rewardAmount,
-      _refundRecipient,
-      _bondAmount,
-      _proposalDisputeWindow
-    );
+    _vars.configId =
+      triggerConfigId(_query, _rewardToken, _rewardAmount, _refundRecipient, _bondAmount, _proposalDisputeWindow);
 
     _vars.triggerCount = triggerCount[_vars.configId]++;
     _vars.salt = _getSalt(_vars.triggerCount, _rewardAmount);
 
     _vars.triggerAddress = computeTriggerAddress(
-      _query,
-      _rewardToken,
-      _rewardAmount,
-      _refundRecipient,
-      _bondAmount,
-      _proposalDisputeWindow,
-      _vars.triggerCount
+      _query, _rewardToken, _rewardAmount, _refundRecipient, _bondAmount, _proposalDisputeWindow, _vars.triggerCount
     );
 
-    _rewardToken.safeTransferFrom(
-      msg.sender,
-      _vars.triggerAddress,
-      _rewardAmount
-    );
+    _rewardToken.safeTransferFrom(msg.sender, _vars.triggerAddress, _rewardAmount);
 
     _vars.trigger = new UMATrigger{salt: _vars.salt}(
       manager,
@@ -151,9 +133,10 @@ contract UMATriggerFactory {
       _refundRecipient,
       _bondAmount,
       _proposalDisputeWindow,
-      _name,
-      _description,
-      _logoURI
+      _metadata.name,
+      _metadata.category,
+      _metadata.description,
+      _metadata.logoURI
     );
 
     return _vars.trigger;
@@ -170,24 +153,12 @@ contract UMATriggerFactory {
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow,
     uint256 _triggerCount
-  ) public view returns(address _address) {
-    bytes memory _triggerConstructorArgs = abi.encode(
-      manager,
-      oracle,
-      _query,
-      _rewardToken,
-      _refundRecipient,
-      _bondAmount,
-      _proposalDisputeWindow
-    );
+  ) public view returns (address _address) {
+    bytes memory _triggerConstructorArgs =
+      abi.encode(manager, oracle, _query, _rewardToken, _refundRecipient, _bondAmount, _proposalDisputeWindow);
 
     // https://eips.ethereum.org/EIPS/eip-1014
-    bytes32 _bytecodeHash = keccak256(
-      bytes.concat(
-        type(UMATrigger).creationCode,
-        _triggerConstructorArgs
-      )
-    );
+    bytes32 _bytecodeHash = keccak256(bytes.concat(type(UMATrigger).creationCode, _triggerConstructorArgs));
 
     bytes32 _salt = _getSalt(_triggerCount, _rewardAmount);
     bytes32 _data = keccak256(bytes.concat(bytes1(0xff), bytes20(address(this)), _salt, _bytecodeHash));
@@ -204,33 +175,18 @@ contract UMATriggerFactory {
     address _refundRecipient,
     uint256 _bondAmount,
     uint256 _proposalDisputeWindow
-  ) public view returns(address) {
-
-    bytes32 _counterId = triggerConfigId(
-      _query,
-      _rewardToken,
-      _rewardAmount,
-      _refundRecipient,
-      _bondAmount,
-      _proposalDisputeWindow
-    );
+  ) public view returns (address) {
+    bytes32 _counterId =
+      triggerConfigId(_query, _rewardToken, _rewardAmount, _refundRecipient, _bondAmount, _proposalDisputeWindow);
     uint256 _triggerCount = triggerCount[_counterId];
 
-    for (uint i = 0; i < _triggerCount; i++) {
+    for (uint256 i = 0; i < _triggerCount; i++) {
       address _computedAddr = computeTriggerAddress(
-        _query,
-        _rewardToken,
-        _rewardAmount,
-        _refundRecipient,
-        _bondAmount,
-        _proposalDisputeWindow,
-        i
+        _query, _rewardToken, _rewardAmount, _refundRecipient, _bondAmount, _proposalDisputeWindow, i
       );
 
       UMATrigger _trigger = UMATrigger(_computedAddr);
-      if (_trigger.getSetsLength() < _trigger.MAX_SET_LENGTH()) {
-        return _computedAddr;
-      }
+      if (_trigger.getSetsLength() < _trigger.MAX_SET_LENGTH()) return _computedAddr;
     }
 
     return address(0); // If none is found, return zero address.
@@ -256,22 +212,12 @@ contract UMATriggerFactory {
     uint256 _proposalDisputeWindow
   ) public view returns (bytes32) {
     bytes memory _triggerConfigData = abi.encode(
-      manager,
-      oracle,
-      _query,
-      _rewardToken,
-      _rewardAmount,
-      _refundRecipient,
-      _bondAmount,
-      _proposalDisputeWindow
+      manager, oracle, _query, _rewardToken, _rewardAmount, _refundRecipient, _bondAmount, _proposalDisputeWindow
     );
     return keccak256(_triggerConfigData);
   }
 
-  function _getSalt(
-    uint256 _triggerCount,
-    uint256 _rewardAmount
-  ) private pure returns (bytes32) {
+  function _getSalt(uint256 _triggerCount, uint256 _rewardAmount) private pure returns (bytes32) {
     // We use the reward amount in the salt so that triggers that are the same
     // except for their reward amount will still be deployed to different
     // addresses and can be differentiated. A trigger deployment with the same
