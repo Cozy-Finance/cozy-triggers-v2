@@ -66,13 +66,13 @@ contract DeployTriggerFactories is ScriptUtils {
     // Loosely validate manager interface by ensuring `owner()` doesn't revert.
     manager.owner();
 
-    // console2.log("Deploying ChainlinkTriggerFactory...");
-    // console2.log("    manager", address(manager));
-    // vm.broadcast();
-    // address factory = address(new ChainlinkTriggerFactory(manager));
-    // console2.log("ChainlinkTriggerFactory deployed", factory);
+    console2.log("Deploying ChainlinkTriggerFactory...");
+    console2.log("    manager", address(manager));
+    vm.broadcast();
+    address factory = address(new ChainlinkTriggerFactory(manager));
+    console2.log("ChainlinkTriggerFactory deployed", factory);
 
-    // console2.log("====================");
+    console2.log("====================");
 
     OptimisticOracleV2Interface _umaOracle =
       OptimisticOracleV2Interface(umaOracleFinder.getImplementationAddress(bytes32("OptimisticOracleV2")));
@@ -81,7 +81,7 @@ contract DeployTriggerFactories is ScriptUtils {
     console2.log("    manager", address(manager));
     console2.log("    umaOracle", address(_umaOracle));
     vm.broadcast();
-    address factory = address(new UMATriggerFactory(manager, _umaOracle));
+    factory = address(new UMATriggerFactory(manager, _umaOracle));
     console2.log("UMATriggerFactory deployed", factory);
 
     console2.log("====================");
