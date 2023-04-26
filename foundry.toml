@@ -4,8 +4,8 @@ verbosity = 3
 fs_permissions = [{ access = "read", path = "./script/input"}]
 # Solidity config.
 solc-version = "0.8.16"
-optimizer = true
-optimizer-runs = 10_000_000
+via-ir = true
+optimizer-runs = 1
 bytecode_hash = "ipfs"
 remappings = [
   "test/=test/", # Allows imports using e.g. `test/` to refer to root `test` directory.
