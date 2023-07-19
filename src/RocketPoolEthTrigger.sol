@@ -9,8 +9,8 @@ import "src/interfaces/IRocketPoolOVMPriceOracle.sol";
 
 /**
  * @notice A trigger contract that takes two addresses: a Chainlink oracle and a Rocket Pool OVM oracle.
- * This trigger ensures the two oracles always stay within the given price tolerance; the delta
- * in prices can be equal to but not greater than the price tolerance.
+ * This trigger ensures the Chainlink oracle is always above the given price tolerance with respect to the
+ * Rocket Pool OVM oracle; the delta in prices can be equal to but not greater than the price tolerance.
  * @dev Rocket Pool OVM oracles are specific to Optimism. Thus, this trigger should only be used on Optimism.
  */
 contract RocketPoolEthTrigger is BaseTrigger {
@@ -25,9 +25,10 @@ contract RocketPoolEthTrigger is BaseTrigger {
   /// @notice The Rocket Pool OVM oracle, reporting the exchange rate from Rocket Pool on L1.
   IRocketPoolOVMPriceOracle public immutable rocketPoolOracle;
 
-  /// @notice The maximum percent delta between oracle prices that is allowed, expressed as a zoc.
+  /// @notice The maximum amount greater that the rocketPoolOracle price is than the chainlinkOracle price that is
+  /// allowed, expressed as a zoc.
   /// For example, a 0.2e4 priceTolerance would mean the rocketPoolOracle price is
-  /// allowed to deviate from the chainlinkOracle price by up to +/- 20%, but no more.
+  /// allowed to deviate from the chainlinkOracle price by up to +20%, but no more.
   /// Note that if the chainlinkOracle returns a price of 0, we treat the priceTolerance
   /// as having been exceeded, no matter what price the rocketPoolOracle returns.
   uint256 public immutable priceTolerance;
@@ -112,16 +113,21 @@ contract RocketPoolEthTrigger is BaseTrigger {
     uint256 _rocketPoolPrice = rocketPoolOracle.rate();
     uint256 _rocketPoolUpdatedAt = rocketPoolOracle.lastUpdated();
     if (_rocketPoolUpdatedAt > block.timestamp) revert InvalidTimestamp();
-    // If things work as expected, the only delay should be from waiting for transaction inclusion in blocks.
+    // If things work as expected, the only delay should be from waiting for transaction inclusion in blocks every 5760 L1 blocks.
     // If something goes wrong with Rocket Pool oracles, it might be delayed hours or days until software or nodes can be fixed.
     if (block.timestamp - _rocketPoolUpdatedAt > rocketPoolFrequencyTolerance) revert StaleOraclePrice();
 
-    uint256 _priceDelta = _chainlinkPrice > _rocketPoolPrice ? _chainlinkPrice - _rocketPoolPrice : _rocketPoolPrice - _chainlinkPrice;
+    // We only perform a check if the Rocket Pool oracle price is greater than the Chainlink oracle price.
+    if (_rocketPoolPrice > _chainlinkPrice) {
+      uint256 _priceDelta = _rocketPoolPrice - _chainlinkPrice;
 
-    // We round up when calculating the delta percentage to accommodate for precision loss to
-    // ensure that the state becomes triggered when the delta is greater than the price tolerance.
-    // When the delta is less than or exactly equal to the price tolerance, the resulting rounded
-    // up value will not be greater than the price tolerance, as expected.
-    return _chainlinkPrice > 0 ? _priceDelta.mulDivUp(ZOC, _chainlinkPrice) > priceTolerance : true;
+      // We round up when calculating the delta percentage to accommodate for precision loss to
+      // ensure that the state becomes triggered when the delta is greater than the price tolerance.
+      // When the delta is less than or exactly equal to the price tolerance, the resulting rounded
+      // up value will not be greater than the price tolerance, as expected.
+      return _chainlinkPrice > 0 ? _priceDelta.mulDivUp(ZOC, _chainlinkPrice) > priceTolerance : true;
+    }
+
+    return false;
   }
 }
